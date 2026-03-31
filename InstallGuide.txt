@@ -3,3 +3,7 @@ npm init -y
 npm i express
 
 npm i -D nodemon
+
+npm install dotenv
+
+npm install mysql

@@ -1,8 +1,9 @@
 import { Router } from "express";
-import testRouter from "./test.mjs"
 
 const router = Router()
 
-router.use(testRouter)
+router.get("/", (req, res) => {
+    res.status(200).send("Hello World");
+})
 
 export default router

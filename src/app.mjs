@@ -1,11 +1,11 @@
-import express from 'express';
+import CreateApps from './createApps.mjs'
+import 'dotenv/config';
+import routes from "./routes/routes.mjs"
 
-const app = express();
-const PORT = process.env.port || 3000;
+const app = CreateApps();
+const PORT = process.env.PORT || 3000;
 
-app.get("/", (req, res) => {
-    res.status(200).send("Hello World");
-})
+app.use(routes);
 
 app.listen(PORT, () => {
     console.log(`running on port ${PORT}`);
