@@ -1,9 +1,7 @@
 npm init -y
-
 npm i express
-
 npm i -D nodemon
-
 npm install dotenv
-
-npm install mysql
+npm install MySQL
+npm install passport
+npm install passport-local 
