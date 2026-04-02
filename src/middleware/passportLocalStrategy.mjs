@@ -1,6 +1,7 @@
 import passport from 'passport';
 import LocalStrategy from 'passport-local';
 import db from '../utils/dbConfig.mjs';
+import bcrypt from 'bcrypt';
 
 export default function passportLocalStrategy() {
     passport.use(new LocalStrategy(async function verify(username, password, cb) {
@@ -18,7 +19,9 @@ export default function passportLocalStrategy() {
 
             const user = rows[0];
 
-            if (user.hashed_password != password) {
+            const match = await bcrypt.compare(password, user.hashed_password);
+
+            if (!match) {
                 return cb(null, false, { message: 'Incorrect password.' });
             }
 
