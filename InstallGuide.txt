@@ -6,3 +6,4 @@ npm install mysql2
 npm install passport
 npm install passport-local 
 npm install bcrypt
+npm install express-validator

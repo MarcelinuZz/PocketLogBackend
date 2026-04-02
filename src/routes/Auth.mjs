@@ -3,6 +3,7 @@ import passport from "passport";
 import { randomUUID } from 'node:crypto';
 import db from '../utils/dbConfig.mjs';
 import bcrypt from 'bcrypt';
+import { body, validationResult } from 'express-validator';
 
 const router = Router()
 
@@ -15,7 +16,21 @@ const authenticateAsync = (req, res, next) => {
     });
 };
 
-router.post("/login-local", async (req, res, next) => {
+router.post("/login-local", 
+    [
+        body("username").notEmpty().withMessage("Username wajib diisi."),
+        body("password").notEmpty().withMessage("Password wajib diisi.")
+    ],
+    async (req, res, next) => {
+    
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({
+            message: "Login Gagal",
+            error: errors.array()
+        });
+    }
+
     try {
         const { user, info } = await authenticateAsync(req, res, next);
 
@@ -39,16 +54,26 @@ router.post("/login-local", async (req, res, next) => {
     }
 })
 
-router.post("/register-local", async (req, res, next) => {
+router.post("/register-local",
+    [
+        body("name").notEmpty().withMessage("Nama wajib diisi."),
+        body("email").isEmail().withMessage("Format email salah/tidak valid."),
+        body("gender").notEmpty().withMessage("Gender wajib diisi."),
+        body("dob").isDate().withMessage("Format tanggal salah.").notEmpty().withMessage("Tanggal lahir wajib diisi."),
+        body("password").isLength({ min: 6 }).withMessage("Password minimal 6 karakter.")
+    ],
+    async (req, res, next) => {
+    
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({
+            message: "Register Gagal",
+            error: errors.array()
+        });
+    }
+
     try {
         const { name, gender, dob, email, avatarUrl, password } = req.body;
-
-        if (!name || !email || !password || !gender || !dob) {
-            return res.status(400).json({
-                message: "Register Gagal",
-                error: "Nama, email, gender, dob, dan password wajib diisi."
-            });
-        }
 
         let id;
         let isIdUnique = false;
