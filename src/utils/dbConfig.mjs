@@ -1,20 +1,23 @@
-import mysql from "mysql";
+import mysql from "mysql2/promise";
 
 // Isi DbConfig dengan Configurasi anda
 
-const dbConfig = mysql.createConnection({
+const dbConfig = mysql.createPool({
     host: process.env.DB_HOST || "localhost",
     user: process.env.DB_USER || "root",
     password: process.env.DB_PASSWORD || "",
-    database: process.env.DB_NAME || "PocketLog"
+    database: process.env.DB_NAME || "PocketLog",
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
-dbConfig.connect((err) => {
-    if (err) {
-        console.error("Terjadi error saat koneksi ke database:", err.message);
-        return;
-    }
+try {
+    const connection = await dbConfig.getConnection();
     console.log("Berhasil terkoneksi ke database!");
-});
+    connection.release();
+} catch (err) {
+    console.error("Terjadi error saat koneksi ke database:", err.message);
+}
 
 export default dbConfig;
