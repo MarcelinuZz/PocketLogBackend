@@ -1,6 +1,7 @@
 import express from 'express';
 import passport from 'passport';
 import passportLocalStrategy from './middleware/passportLocalStrategy.mjs';
+import passportJwtStrategy from './middleware/passportJwtStrategy.mjs';
 
 
 export default function CreateApps() {
@@ -8,6 +9,7 @@ export default function CreateApps() {
     app.use(express.json());
 
     passportLocalStrategy();
+    passportJwtStrategy();
 
     app.use(passport.initialize());
 

@@ -7,3 +7,5 @@ npm install passport
 npm install passport-local 
 npm install bcrypt
 npm install express-validator
+npm install passport-jwt
+npm install jsonwebtoken
