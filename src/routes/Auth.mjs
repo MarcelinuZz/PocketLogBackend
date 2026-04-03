@@ -5,8 +5,11 @@ import bcrypt from 'bcrypt';
 import { body, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 import randomizedIds from "../utils/randomizedIds.mjs";
+import crypto from "crypto";
 
 const router = Router()
+
+const authCodes = new Map();
 
 const authenticateAsync = (req, res, next) => {
     return new Promise((resolve, reject) => {
@@ -115,8 +118,8 @@ router.post("/register-local",
             let id = await randomizedIds();
 
             const query = `
-            INSERT INTO users (id, name, gender, dob, email, avatar_url, created_at) 
-            VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            INSERT INTO users (id, name, gender, dob, email, avatar_url) 
+            VALUES (?, ?, ?, ?, ?, ?)
         `;
 
             const [result] = await db.query(query, [id, name, gender, dob, email, avatarUrl]);
@@ -152,19 +155,56 @@ router.get("/google/callback", passport.authenticate("google", {
 }), (req, res) => {
     const user = req.user;
 
-    const payload = {
-        sub: user.id
-    };
+    const authCode = crypto.randomBytes(32).toString('hex');
 
+    const expiresAt = Date.now() + 5 * 60 * 1000;
+    authCodes.set(authCode, {
+        userId: user.id,
+        expiresAt: expiresAt
+    });
+
+    setTimeout(() => {
+        authCodes.delete(authCode);
+    }, 5 * 60 * 1000);
+
+    const flutterAppUrl = process.env.FLUTTER_APP_URL || "http://localhost:5173/Home";
+
+    res.redirect(`${flutterAppUrl}?authCode=${authCode}`);
+});
+
+router.post("/exchange-token", [body("authCode").notEmpty().withMessage("authCode wajib diberikan.")], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: "Gagal menukar token", error: errors.array() });
+    }
+
+    const { authCode } = req.body;
+    const codeData = authCodes.get(authCode);
+
+    if (!codeData) {
+        return res.status(400).json({ message: "Auth code tidak valid atau sudah kedaluwarsa." });
+    }
+
+    if (Date.now() > codeData.expiresAt) {
+        authCodes.delete(authCode);
+        return res.status(400).json({ message: "Auth code sudah kedaluwarsa." });
+    }
+
+    const payload = { sub: codeData.userId };
+    console.log(payload)
     const secret = process.env.JWT_SECRET || "Kj9!pL2#mN5*qR8@zX1^vB4&tY7(uI0PocketLog+dF9[gH2]jK5{lM8}nB1";
     const refreshSecret = process.env.REFRESH_TOKEN_SECRET || "zX9!vB4&tY7(uI0)PocketLog+dF9[gH2]jK5{lM8}nB1@mN5*qR8#pL2$kJ7^hG4";
 
     const accessToken = jwt.sign(payload, secret, { expiresIn: '1h' });
     const refreshToken = jwt.sign(payload, refreshSecret, { expiresIn: '7d' });
 
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    authCodes.delete(authCode);
 
-    res.redirect(`${frontendUrl}/auth/callback#access_token=${accessToken}&refresh_token=${refreshToken}`);
+    res.status(200).json({
+        message: "Token berhasil ditukar",
+        accessToken: accessToken,
+        refreshToken: refreshToken
+    });
 });
 
 router.get("/me", passport.authenticate("jwt", { session: false }), (req, res) => {

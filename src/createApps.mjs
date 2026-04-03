@@ -2,6 +2,7 @@ import express from 'express';
 import passport from 'passport';
 import passportLocalStrategy from './middleware/passportLocalStrategy.mjs';
 import passportJwtStrategy from './middleware/passportJwtStrategy.mjs';
+import passportGoogleStrategy from './middleware/passportGoogleStrategy.mjs';
 
 
 export default function CreateApps() {
@@ -10,6 +11,7 @@ export default function CreateApps() {
 
     passportLocalStrategy();
     passportJwtStrategy();
+    passportGoogleStrategy();
 
     app.use(passport.initialize());
 

@@ -12,7 +12,7 @@ export default function passportGoogleStrategy() {
         callbackURL: "http://localhost:8080/auth/google/callback"
     }, async (accessToken, refreshToken, profile, done) => {
         try {
-            const Querys = `SELECT * FROM users u JOIN user_identities ui 
+            const Querys = `SELECT u.* FROM users u JOIN user_identities ui 
             ON u.id = ui.user_id 
             WHERE ui.provider = 'google' AND ui.provider_id = ?`
 
@@ -33,9 +33,10 @@ export default function passportGoogleStrategy() {
             }
 
             const id = await randomizedIds();
+            const identityId = await randomizedIds();
 
-            const insertQuery = `INSERT INTO users (id, name, gender, DOB, email, avatar_url, created_at) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`
-            const insertIdentityQuery = `INSERT INTO user_identities (user_id, provider, provider_id, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)`
+            const insertQuery = `INSERT INTO users (id, name, gender, DOB, email, avatar_url) VALUES (?, ?, ?, ?, ?, ?)`
+            const insertIdentityQuery = `INSERT INTO user_identities (id, user_id, provider, provider_id) VALUES (?, ?, ?, ?)`
 
             const userGender = profile.gender || (profile._json && profile._json.gender) || null;
             const avatarUrl = profile.photos?.[0]?.value || null;
@@ -45,7 +46,7 @@ export default function passportGoogleStrategy() {
                 await connection.beginTransaction();
 
                 await connection.query(insertQuery, [id, profile.displayName, userGender, dobString, profile.emails[0].value, avatarUrl]);
-                await connection.query(insertIdentityQuery, [id, "google", profile.id]);
+                await connection.query(insertIdentityQuery, [identityId, id, "google", profile.id]);
 
                 await connection.commit();
                 connection.release();
