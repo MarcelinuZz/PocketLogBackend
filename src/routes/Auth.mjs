@@ -69,11 +69,21 @@ router.post("/login-local",
         }
     })
 
-router.post("/refresh-token", (req, res) => {
+router.post("/refresh-token", async (req, res) => {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
         return res.status(401).json({ message: "Refresh token tidak diberikan." });
+    }
+
+    try {
+        const [blacklist] = await db.query('SELECT id FROM token_blacklist WHERE token_id = ?', [refreshToken]);
+        if (blacklist.length > 0) {
+            return res.status(403).json({ message: "Refresh token ini sudah ditarik (blacklisted)." });
+        }
+    } catch (err) {
+        console.error("Refresh Token DB Error:", err);
+        return res.status(500).json({ message: "Terjadi kesalahan server saat memeriksa token." });
     }
 
     const refreshSecret = process.env.REFRESH_TOKEN_SECRET || "zX9!vB4&tY7(uI0)PocketLog+dF9[gH2]jK5{lM8}nB1@mN5*qR8#pL2$kJ7^hG4";
@@ -211,6 +221,45 @@ router.get("/me", passport.authenticate("jwt", { session: false }), (req, res) =
     res.status(200).json({
         user: req.user
     });
+});
+
+router.post("/logout", passport.authenticate("jwt", { session: false }), async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+            return res.status(400).json({ message: "No token provided." });
+        }
+
+        const accessToken = authHeader.split(" ")[1];
+        const decoded = jwt.decode(accessToken);
+
+        if (decoded) {
+            const expiresAt = new Date(decoded.exp * 1000).toISOString().slice(0, 19).replace('T', ' ');
+            await db.query(
+                `INSERT INTO token_blacklist (token_id, expires_at) VALUES (?, ?)`,
+                [accessToken, expiresAt]
+            );
+        }
+
+        const { refreshToken } = req.body;
+        if (refreshToken) {
+            const decodedRefresh = jwt.decode(refreshToken);
+            if (decodedRefresh) {
+                const refreshExpiresAt = new Date(decodedRefresh.exp * 1000).toISOString().slice(0, 19).replace('T', ' ');
+                await db.query(
+                    `INSERT INTO token_blacklist (token_id, expires_at) VALUES (?, ?)`,
+                    [refreshToken, refreshExpiresAt]
+                );
+            }
+        }
+
+        res.status(200).json({
+            message: "Logout Berhasil. Akses dihentikan secara permanen."
+        });
+    } catch (err) {
+        console.error("Logout Error:", err);
+        res.status(500).json({ message: "Gagal menghapus sesi (logout)." });
+    }
 });
 
 export default router

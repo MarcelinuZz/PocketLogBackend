@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 31 Mar 2026 pada 07.52
+-- Waktu pembuatan: 03 Apr 2026 pada 19.31
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -35,6 +35,27 @@ CREATE TABLE `categories` (
   `icon_url` varchar(255) DEFAULT NULL,
   `color_hex` varchar(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `token_blacklist`
+--
+
+CREATE TABLE `token_blacklist` (
+  `id` int(11) NOT NULL,
+  `token_id` varchar(255) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `blacklisted_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `token_blacklist`
+--
+
+INSERT INTO `token_blacklist` (`id`, `token_id`, `expires_at`, `blacklisted_at`) VALUES
+(1, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYzk4MjY2MS1hMjliLTQ2NjctYjAyZC0yMzI2ZWFiNDk3M2QiLCJpYXQiOjE3NzUyMzcwODMsImV4cCI6MTc3NTI0MDY4M30.RbwgiGmLl3P1yUx6VhdhrSrx1QSu04PT13XRQ3zDRZc', '2026-04-03 18:24:43', '2026-04-03 17:27:14'),
+(2, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYzk4MjY2MS1hMjliLTQ2NjctYjAyZC0yMzI2ZWFiNDk3M2QiLCJpYXQiOjE3NzUyMzY3MjQsImV4cCI6MTc3NTg0MTUyNH0.CVnrnChNf-98gYjB2AADw6pjk2ukQetSA-kNp4lcIWI', '2026-04-10 17:18:44', '2026-04-03 17:27:14');
 
 -- --------------------------------------------------------
 
@@ -73,6 +94,17 @@ CREATE TABLE `users` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data untuk tabel `users`
+--
+
+INSERT INTO `users` (`id`, `name`, `gender`, `DOB`, `email`, `avatar_url`, `created_at`) VALUES
+('0c982661-a29b-4667-b02d-2326eab4973d', 'Owen', 'Male', '2003-07-24', 'Owenn@gmail.com', '', '2026-04-02 16:55:55'),
+('4049a9ee-2e90-11f1-98b5-3c7c3fec23a4', 'Linus', 'Male', '2026-04-15', 'wijayaoeymarcelinus@gmail.com', NULL, '2026-04-02 12:34:07'),
+('6fa45bfc-1bd6-4656-8cc6-a115e039f5ff', 'Albert', 'Male', '2006-04-02', 'wilsonalbert@gmail.com', '', '2026-04-02 16:50:01'),
+('cb3735de-5ce2-40b2-94de-cfad422ae928', 'Owenia', 'Male', '2003-07-04', 'Owennia@gmail.com', '', '2026-04-03 16:04:05'),
+('ce20641b-e427-49a4-9f67-ef4afa9f572a', 'Albertus', 'Male', '2006-07-02', 'wilsonalbertus@gmail.com', '', '2026-04-02 16:51:16');
+
 -- --------------------------------------------------------
 
 --
@@ -96,6 +128,15 @@ CREATE TABLE `user_passwords` (
   `user_id` varchar(36) NOT NULL,
   `hashed_password` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `user_passwords`
+--
+
+INSERT INTO `user_passwords` (`user_id`, `hashed_password`) VALUES
+('0c982661-a29b-4667-b02d-2326eab4973d', '$2b$11$DGQ67DYvLJTrcO.AVjYrbupZSsDFsXmPdRUkrJjarIjloHLdEplxG'),
+('4049a9ee-2e90-11f1-98b5-3c7c3fec23a4', 'abcd1234'),
+('cb3735de-5ce2-40b2-94de-cfad422ae928', '$2b$11$nmc0DnZ2rAAptKvVVs95Du6L/BKZGhxFgw/VqYj9HkmuCDkbHQe2i');
 
 -- --------------------------------------------------------
 
@@ -139,6 +180,13 @@ ALTER TABLE `categories`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indeks untuk tabel `token_blacklist`
+--
+ALTER TABLE `token_blacklist`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_token_id` (`token_id`);
+
+--
 -- Indeks untuk tabel `transactions`
 --
 ALTER TABLE `transactions`
@@ -180,6 +228,16 @@ ALTER TABLE `user_settings`
 ALTER TABLE `wallets`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
+
+--
+-- AUTO_INCREMENT untuk tabel yang dibuang
+--
+
+--
+-- AUTO_INCREMENT untuk tabel `token_blacklist`
+--
+ALTER TABLE `token_blacklist`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
