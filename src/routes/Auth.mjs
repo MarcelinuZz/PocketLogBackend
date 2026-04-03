@@ -1,10 +1,10 @@
 import { Router } from "express";
 import passport from "passport";
-import { randomUUID } from 'node:crypto';
 import db from '../utils/dbConfig.mjs';
 import bcrypt from 'bcrypt';
 import { body, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
+import randomizedIds from "../utils/randomizedIds.mjs";
 
 const router = Router()
 
@@ -47,7 +47,7 @@ router.post("/login-local",
             };
 
             const secret = process.env.JWT_SECRET || "Kj9!pL2#mN5*qR8@zX1^vB4&tY7(uI0PocketLog+dF9[gH2]jK5{lM8}nB1";
-            const refreshSecret = process.env.REFRESH_TOKEN_SECRET || "zX9!vB4&tY7(uI0)oP3_sA6+dF9[gH2]jK5{lM8}nB1@mN5*qR8#pL2$kJ7^hG4";
+            const refreshSecret = process.env.REFRESH_TOKEN_SECRET || "zX9!vB4&tY7(uI0)PocketLog+dF9[gH2]jK5{lM8}nB1@mN5*qR8#pL2$kJ7^hG4";
 
             const accessToken = jwt.sign(payload, secret, { expiresIn: '1h' });
             const refreshToken = jwt.sign(payload, refreshSecret, { expiresIn: '7d' });
@@ -55,8 +55,7 @@ router.post("/login-local",
             res.status(200).json({
                 message: "Login Berhasil",
                 accessToken: accessToken,
-                refreshToken: refreshToken,
-                user: user
+                refreshToken: refreshToken
             });
 
         } catch (err) {
@@ -74,7 +73,7 @@ router.post("/refresh-token", (req, res) => {
         return res.status(401).json({ message: "Refresh token tidak diberikan." });
     }
 
-    const refreshSecret = process.env.REFRESH_TOKEN_SECRET || "zX9!vB4&tY7(uI0)oP3_sA6+dF9[gH2]jK5{lM8}nB1@mN5*qR8#pL2$kJ7^hG4";
+    const refreshSecret = process.env.REFRESH_TOKEN_SECRET || "zX9!vB4&tY7(uI0)PocketLog+dF9[gH2]jK5{lM8}nB1@mN5*qR8#pL2$kJ7^hG4";
 
     jwt.verify(refreshToken, refreshSecret, (err, userPayload) => {
         if (err) {
@@ -113,20 +112,11 @@ router.post("/register-local",
         try {
             const { name, gender, dob, email, avatarUrl, password } = req.body;
 
-            let id;
-            let isIdUnique = false;
-
-            while (!isIdUnique) {
-                id = randomUUID();
-                const [existingRows] = await db.query("SELECT id FROM users WHERE id = ?", [id]);
-                if (existingRows.length === 0) {
-                    isIdUnique = true;
-                }
-            }
+            let id = await randomizedIds();
 
             const query = `
-            INSERT INTO users (id, name, gender, dob, email, avatar_url) 
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO users (id, name, gender, dob, email, avatar_url, created_at) 
+            VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         `;
 
             const [result] = await db.query(query, [id, name, gender, dob, email, avatarUrl]);
@@ -141,8 +131,7 @@ router.post("/register-local",
             const [result2] = await db.query(query2, [id, hashedPassword]);
 
             res.status(200).json({
-                message: "Register Berhasil",
-                user: { id, name }
+                message: "Register Berhasil"
             });
 
         } catch (err) {
@@ -152,5 +141,36 @@ router.post("/register-local",
             });
         }
     })
+
+const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+
+router.get("/google", passport.authenticate("google", { scope: ["profile", "email"], session: false }));
+
+router.get("/google/callback", passport.authenticate("google", {
+    failureRedirect: `${frontendUrl}/login?error=google_auth_failed`,
+    session: false
+}), (req, res) => {
+    const user = req.user;
+
+    const payload = {
+        sub: user.id
+    };
+
+    const secret = process.env.JWT_SECRET || "Kj9!pL2#mN5*qR8@zX1^vB4&tY7(uI0PocketLog+dF9[gH2]jK5{lM8}nB1";
+    const refreshSecret = process.env.REFRESH_TOKEN_SECRET || "zX9!vB4&tY7(uI0)PocketLog+dF9[gH2]jK5{lM8}nB1@mN5*qR8#pL2$kJ7^hG4";
+
+    const accessToken = jwt.sign(payload, secret, { expiresIn: '1h' });
+    const refreshToken = jwt.sign(payload, refreshSecret, { expiresIn: '7d' });
+
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+
+    res.redirect(`${frontendUrl}/auth/callback#access_token=${accessToken}&refresh_token=${refreshToken}`);
+});
+
+router.get("/me", passport.authenticate("jwt", { session: false }), (req, res) => {
+    res.status(200).json({
+        user: req.user
+    });
+});
 
 export default router

@@ -9,3 +9,4 @@ npm install bcrypt
 npm install express-validator
 npm install passport-jwt
 npm install jsonwebtoken
+npm install passport-google-oauth20
