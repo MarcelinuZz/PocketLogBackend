@@ -1,12 +1,17 @@
+1. SETUP AUTH SERVICE (Folder: auth-service)
+-----------------------------------------
 npm init -y
-npm i express
+npm i express dotenv mysql2 passport passport-local passport-google-oauth20 bcrypt jsonwebtoken express-validator
 npm i -D nodemon
-npm install dotenv
-npm install mysql2
-npm install passport
-npm install passport-local 
-npm install bcrypt
-npm install express-validator
-npm install passport-jwt
-npm install jsonwebtoken
-npm install passport-google-oauth20
+
+2. SETUP API GATEWAY (Folder: gateway-service)
+-----------------------------------------
+npm init -y
+npm i express dotenv jsonwebtoken http-proxy-middleware
+npm i -D nodemon
+
+3. SETUP USER SERVICE (Folder: user-service)
+-----------------------------------------
+npm init -y
+npm i express dotenv mysql2
+npm i -D nodemon

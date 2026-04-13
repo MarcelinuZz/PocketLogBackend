@@ -1,6 +1,6 @@
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import passport from "passport";
-import db from "../utils/dbConfig.mjs";
+import db from "../config/dbConfig.mjs";
 import { query } from "express-validator";
 import randomizedIds from "../utils/randomizedIds.mjs";
 
@@ -9,7 +9,7 @@ export default function passportGoogleStrategy() {
         // ubah dengan data client id dan client secret anda
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "http://localhost:8080/auth/google/callback"
+        callbackURL: `http://localhost:${process.env.PORT || 3001}/auth/google/callback`
     }, async (accessToken, refreshToken, profile, done) => {
         try {
             const Querys = `SELECT u.* FROM users u JOIN user_identities ui 

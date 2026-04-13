@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import db from './dbConfig.mjs';
+import db from '../config/dbConfig.mjs';
 
 export default async function randomizedIds() {
     let id;
