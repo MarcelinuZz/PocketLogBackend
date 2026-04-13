@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "main": "app.mjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start:dev": "nodemon ./src/app.mjs",
-    "start": "node ./src/app.mjs"
+    "dev": "concurrently \"npm run dev:gateway\" \"npm run dev:auth\" \"npm run dev:user\"",
+    "dev:gateway": "cd gateway-services && npm run start:dev",
+    "dev:auth": "cd auth-services && npm run start:dev",
+    "dev:user": "cd user-services && npm run start:dev"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +25,7 @@
     "passport-local": "^1.0.0"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "nodemon": "^3.1.14"
   },
   "type": "module"
