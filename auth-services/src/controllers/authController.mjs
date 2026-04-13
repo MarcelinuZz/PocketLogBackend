@@ -109,25 +109,36 @@ export const exchangeToken = (req, res) => {
 export const logout = async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
-        if (!authHeader) return res.status(400).json({ message: "No token provided." });
+        const { refreshToken } = req.body;
+
+        if (!authHeader || !refreshToken) {
+            return res.status(400).json({ 
+                message: "Logout gagal. Access Token dan Refresh Token wajib disertakan!" 
+            });
+        }
 
         const accessToken = authHeader.split(" ")[1];
-        const decoded = jwt.decode(accessToken);
 
-        if (decoded) {
-            const expiresAt = new Date(decoded.exp * 1000).toISOString().slice(0, 19).replace('T', ' ');
-            await db.query(`INSERT INTO token_blacklist (token_id, expires_at) VALUES (?, ?)`, [accessToken, expiresAt]);
+        const decodedAccess = jwt.decode(accessToken);
+        const decodedRefresh = jwt.decode(refreshToken);
+
+        if (!decodedAccess || !decodedRefresh) {
+            return res.status(400).json({ message: "Format token tidak valid." });
         }
 
-        const { refreshToken } = req.body;
-        if (refreshToken) {
-            const decodedRefresh = jwt.decode(refreshToken);
-            if (decodedRefresh) {
-                const refreshExpiresAt = new Date(decodedRefresh.exp * 1000).toISOString().slice(0, 19).replace('T', ' ');
-                await db.query(`INSERT INTO token_blacklist (token_id, expires_at) VALUES (?, ?)`, [refreshToken, refreshExpiresAt]);
-            }
+        if (decodedAccess.sub !== decodedRefresh.sub) {
+            return res.status(403).json({ 
+                message: "Akses ditolak. Refresh Token tidak cocok dengan Access Token." 
+            });
         }
-        res.status(200).json({ message: "Logout Berhasil. Akses dihentikan." });
+
+        const accessExpiresAt = new Date(decodedAccess.exp * 1000).toISOString().slice(0, 19).replace('T', ' ');
+        await db.query(`INSERT INTO token_blacklist (token_id, expires_at) VALUES (?, ?)`, [accessToken, accessExpiresAt]);
+
+        const refreshExpiresAt = new Date(decodedRefresh.exp * 1000).toISOString().slice(0, 19).replace('T', ' ');
+        await db.query(`INSERT INTO token_blacklist (token_id, expires_at) VALUES (?, ?)`, [refreshToken, refreshExpiresAt]);
+
+        res.status(200).json({ message: "Logout Berhasil. Semua akses dihentikan." });
     } catch (err) {
         res.status(500).json({ message: "Gagal menghapus sesi (logout)." });
     }
