@@ -1,17 +1,79 @@
-1. SETUP AUTH SERVICE (Folder: auth-service)
+====================================
+  PocketLog Backend — Install Guide
+====================================
+
+Prerequisite:
+  - Node.js v18+ (diperlukan untuk global fetch API)
+  - MySQL Server
+  - Import pocketlog.sql ke database MySQL
+
+
+0. ROOT PROJECT (Folder: PocketLogBackend)
+-----------------------------------------
+npm init -y
+npm i -D concurrently nodemon
+
+
+1. AUTH SERVICE (Folder: auth-services)
 -----------------------------------------
 npm init -y
 npm i express dotenv mysql2 passport passport-local passport-google-oauth20 bcrypt jsonwebtoken express-validator
 npm i -D nodemon
 
-2. SETUP API GATEWAY (Folder: gateway-service)
+File .env:
+  PORT=3001
+  JWT_SECRET="your_jwt_secret"
+  REFRESH_TOKEN_SECRET="your_refresh_token_secret"
+  GOOGLE_CLIENT_ID="your_google_client_id"
+  GOOGLE_CLIENT_SECRET="your_google_client_secret"
+
+
+2. API GATEWAY (Folder: gateway-services)
 -----------------------------------------
 npm init -y
-npm i express dotenv jsonwebtoken http-proxy-middleware
+npm i express dotenv jsonwebtoken http-proxy-middleware mysql2
 npm i -D nodemon
 
-3. SETUP USER SERVICE (Folder: user-service)
+File .env:
+  PORT=3000
+  JWT_SECRET="your_jwt_secret"
+  REFRESH_TOKEN_SECRET="your_refresh_token_secret"
+
+
+3. USER SERVICE (Folder: user-services)
 -----------------------------------------
 npm init -y
-npm i express dotenv mysql2
+npm i express dotenv mysql2 bcrypt jsonwebtoken express-validator
 npm i -D nodemon
+
+File .env:
+  PORT=3002
+  OTP_CHALLENGE_SECRET="your_otp_challenge_secret"
+  EMAIL_SERVICE_URL="http://localhost:3003"
+  INTERNAL_API_KEY="your_internal_api_key"
+
+
+4. EMAIL SERVICE (Folder: email-services)
+-----------------------------------------
+npm init -y
+npm i express dotenv nodemailer express-validator
+npm i -D nodemon
+
+File .env:
+  PORT=3003
+  SMTP_EMAIL="your_gmail_email"
+  SMTP_PASSWORD="your_gmail_app_password"
+  INTERNAL_API_KEY="your_internal_api_key"
+
+====================================================
+  Menjalankan Semua Service
+====================================================
+
+Dari root folder (PocketLogBackend):
+  npm run dev
+
+Atau jalankan masing-masing:
+  npm run dev:gateway   → Gateway  (:3000)
+  npm run dev:auth      → Auth     (:3001)
+  npm run dev:user      → User     (:3002)
+  npm run dev:email     → Email    (:3003)

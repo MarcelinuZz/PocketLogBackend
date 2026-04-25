@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 25 Apr 2026 pada 14.47
+-- Waktu pembuatan: 25 Apr 2026 pada 16.50
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -34,6 +34,22 @@ CREATE TABLE `categories` (
   `type` varchar(20) NOT NULL,
   `icon_url` varchar(255) DEFAULT NULL,
   `color_hex` varchar(10) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `otp_verifications`
+--
+
+CREATE TABLE `otp_verifications` (
+  `id` int(11) NOT NULL,
+  `user_id` varchar(36) NOT NULL,
+  `otp_code` varchar(6) NOT NULL,
+  `action_type` varchar(50) NOT NULL,
+  `target_value` varchar(255) DEFAULT NULL,
+  `expires_at` datetime NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -118,10 +134,10 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `gender`, `DOB`, `email`, `avatar_url`, `created_at`) VALUES
-('0c982661-a29b-4667-b02d-2326eab4973d', 'Owen', 'Male', '2003-07-24', 'Owenn@gmail.com', '', '2026-04-02 16:55:55'),
+('0c982661-a29b-4667-b02d-2326eab4973d', 'Owen', 'Female', '2003-07-24', 'Owenn@gmail.com', '', '2026-04-02 16:55:55'),
 ('4049a9ee-2e90-11f1-98b5-3c7c3fec23a4', 'Linus', 'Male', '2026-04-15', 'wijayaoeymarcelinus@gmail.com', NULL, '2026-04-02 12:34:07'),
 ('6fa45bfc-1bd6-4656-8cc6-a115e039f5ff', 'Albert', 'Male', '2006-04-02', 'wilsonalbert@gmail.com', '', '2026-04-02 16:50:01'),
-('77501367-c570-4af8-930a-96b798f4feaa', 'Owenias', 'Male', '2003-07-04', 'Owennias@gmail.com', '', '2026-04-13 10:38:29'),
+('77501367-c570-4af8-930a-96b798f4feaa', 'OwenZz', 'Male', '2003-07-04', 'Owennias@gmail.com', '', '2026-04-13 10:38:29'),
 ('8e5f9caa-6e46-4a37-87e8-e061eee56ec6', 'Maruseru Rinusu', NULL, NULL, 'rinusu123@gmail.com', 'https://lh3.googleusercontent.com/a/ACg8ocKuVLTNr1CVNNPrPGHoxBgGn2YkMvH52auWqxpGUf9llNQApA=s96-c', '2026-04-13 10:50:53'),
 ('ac9dde04-1570-4d1d-882a-d69a74624a14', 'Oweniass', 'Male', '2003-07-04', 'Owenniass@gmail.com', '', '2026-04-13 13:14:13'),
 ('cb3735de-5ce2-40b2-94de-cfad422ae928', 'Owenia', 'Male', '2003-07-04', 'Owennia@gmail.com', '', '2026-04-03 16:04:05'),
@@ -223,6 +239,13 @@ ALTER TABLE `categories`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indeks untuk tabel `otp_verifications`
+--
+ALTER TABLE `otp_verifications`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Indeks untuk tabel `token_blacklist`
 --
 ALTER TABLE `token_blacklist`
@@ -285,6 +308,12 @@ ALTER TABLE `wallets`
 --
 
 --
+-- AUTO_INCREMENT untuk tabel `otp_verifications`
+--
+ALTER TABLE `otp_verifications`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT untuk tabel `token_blacklist`
 --
 ALTER TABLE `token_blacklist`
@@ -305,6 +334,12 @@ ALTER TABLE `user_notification`
 --
 ALTER TABLE `categories`
   ADD CONSTRAINT `categories_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Ketidakleluasaan untuk tabel `otp_verifications`
+--
+ALTER TABLE `otp_verifications`
+  ADD CONSTRAINT `otp_verifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `transactions`
@@ -352,6 +387,12 @@ DELIMITER $$
 --
 CREATE DEFINER=`root`@`localhost` EVENT `clean_expired_tokens` ON SCHEDULE EVERY 1 DAY STARTS '2026-04-14 12:17:37' ON COMPLETION NOT PRESERVE ENABLE DO BEGIN
   DELETE FROM token_blacklist WHERE expires_at < NOW();
+END$$
+
+CREATE DEFINER=`root`@`localhost` EVENT `daily_cleanup_otp` ON SCHEDULE EVERY 1 DAY STARTS '2026-04-25 21:47:44' ON COMPLETION NOT PRESERVE ENABLE COMMENT 'Membersihkan OTP yang sudah luput setiap hari pada waktu trafik' DO BEGIN
+    -- Menghapus rekod yang masanya sudah melewati waktu sekarang
+    DELETE FROM otp_verifications 
+    WHERE expires_at < NOW();
 END$$
 
 DELIMITER ;
