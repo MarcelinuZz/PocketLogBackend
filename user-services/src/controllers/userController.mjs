@@ -5,8 +5,8 @@ export const getMe = async (req, res) => {
         const userId = req.headers['x-user-id'];
 
         if (!userId) {
-            return res.status(401).json({ 
-                message: "Akses ditolak. Identitas tidak ditemukan dari Gateway." 
+            return res.status(401).json({
+                message: "Akses ditolak. Identitas tidak ditemukan dari Gateway."
             });
         }
 
@@ -15,7 +15,7 @@ export const getMe = async (req, res) => {
             FROM users 
             WHERE id = ?
         `;
-        
+
         const [rows] = await db.query(query, [userId]);
 
         if (rows.length === 0) {
@@ -32,3 +32,139 @@ export const getMe = async (req, res) => {
         res.status(500).json({ message: "Terjadi kesalahan saat memuat profil." });
     }
 };
+
+export const changeName = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'];
+        const { name } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({
+                message: "Akses ditolak. Identitas tidak ditemukan dari Gateway."
+            });
+        }
+
+        if (!name) {
+            return res.status(400).json({ message: "Nama tidak boleh kosong." });
+        }
+
+        const query = `
+            UPDATE users 
+            SET name = ? 
+            WHERE id = ?
+        `;
+
+        await db.query(query, [name, userId]);
+
+        res.status(200).json({
+            message: "Nama berhasil diubah",
+            data: { name }
+        });
+
+    } catch (err) {
+        console.error("[User Controller Error]:", err);
+        res.status(500).json({ message: "Terjadi kesalahan saat mengubah nama." });
+    }
+}
+
+export const changeGender = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'];
+        const { gender } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({
+                message: "Akses ditolak. Identitas tidak ditemukan dari Gateway."
+            });
+        }
+
+        if (!gender) {
+            return res.status(400).json({ message: "Gender tidak boleh kosong." });
+        }
+
+        const query = `
+            UPDATE users 
+            SET gender = ? 
+            WHERE id = ?
+        `;
+
+        await db.query(query, [gender, userId]);
+
+        res.status(200).json({
+            message: "Gender berhasil diubah",
+            data: { gender }
+        });
+
+    } catch (err) {
+        console.error("[User Controller Error]:", err);
+        res.status(500).json({ message: "Terjadi kesalahan saat mengubah gender." });
+    }
+}
+
+export const changeDOB = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'];
+        const { dob } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({
+                message: "Akses ditolak. Identitas tidak ditemukan dari Gateway."
+            });
+        }
+
+        if (!dob) {
+            return res.status(400).json({ message: "Tanggal lahir tidak boleh kosong." });
+        }
+
+        const query = `
+            UPDATE users 
+            SET dob = ? 
+            WHERE id = ?
+        `;
+
+        await db.query(query, [dob, userId]);
+
+        res.status(200).json({
+            message: "Tanggal lahir berhasil diubah",
+            data: { dob }
+        });
+
+    } catch (err) {
+        console.error("[User Controller Error]:", err);
+        res.status(500).json({ message: "Terjadi kesalahan saat mengubah tanggal lahir." });
+    }
+}
+
+export const changeAvatarUrl = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'];
+        const { avatar_url } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({
+                message: "Akses ditolak. Identitas tidak ditemukan dari Gateway."
+            });
+        }
+
+        if (!avatar_url) {
+            return res.status(400).json({ message: "URL avatar tidak boleh kosong." });
+        }
+
+        const query = `
+            UPDATE users 
+            SET avatar_url = ? 
+            WHERE id = ?
+        `;
+
+        await db.query(query, [avatar_url, userId]);
+
+        res.status(200).json({
+            message: "URL avatar berhasil diubah",
+            data: { avatar_url }
+        });
+
+    } catch (err) {
+        console.error("[User Controller Error]:", err);
+        res.status(500).json({ message: "Terjadi kesalahan saat mengubah URL avatar." });
+    }
+}
