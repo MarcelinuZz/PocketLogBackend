@@ -13,5 +13,5 @@ npm i -D nodemon
 3. SETUP USER SERVICE (Folder: user-service)
 -----------------------------------------
 npm init -y
-npm i express dotenv mysql2
+npm i express dotenv mysql2 nodemailer bcrypt
 npm i -D nodemon
