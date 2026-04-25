@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 14 Apr 2026 pada 07.18
+-- Waktu pembuatan: 25 Apr 2026 pada 14.47
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -150,6 +150,19 @@ INSERT INTO `user_identities` (`id`, `user_id`, `provider`, `provider_id`) VALUE
 -- --------------------------------------------------------
 
 --
+-- Struktur dari tabel `user_notification`
+--
+
+CREATE TABLE `user_notification` (
+  `id` int(11) NOT NULL,
+  `user_id` varchar(36) DEFAULT NULL,
+  `category_id` varchar(36) DEFAULT NULL,
+  `Message` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Struktur dari tabel `user_passwords`
 --
 
@@ -179,8 +192,7 @@ CREATE TABLE `user_settings` (
   `user_id` varchar(36) NOT NULL,
   `currency` varchar(10) DEFAULT 'IDR',
   `appearance` varchar(20) DEFAULT 'Light',
-  `language` varchar(20) DEFAULT 'English',
-  `notifications_enabled` tinyint(1) DEFAULT 1
+  `language` varchar(20) DEFAULT 'English'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -242,6 +254,14 @@ ALTER TABLE `user_identities`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indeks untuk tabel `user_notification`
+--
+ALTER TABLE `user_notification`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `category_id` (`category_id`);
+
+--
 -- Indeks untuk tabel `user_passwords`
 --
 ALTER TABLE `user_passwords`
@@ -271,6 +291,12 @@ ALTER TABLE `token_blacklist`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
+-- AUTO_INCREMENT untuk tabel `user_notification`
+--
+ALTER TABLE `user_notification`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
 --
 
@@ -294,6 +320,13 @@ ALTER TABLE `transactions`
 --
 ALTER TABLE `user_identities`
   ADD CONSTRAINT `user_identities_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Ketidakleluasaan untuk tabel `user_notification`
+--
+ALTER TABLE `user_notification`
+  ADD CONSTRAINT `user_notification_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `user_notification_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
 
 --
 -- Ketidakleluasaan untuk tabel `user_passwords`
