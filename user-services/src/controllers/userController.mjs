@@ -44,10 +44,6 @@ export const changeName = async (req, res) => {
             });
         }
 
-        if (!name) {
-            return res.status(400).json({ message: "Nama tidak boleh kosong." });
-        }
-
         const query = `
             UPDATE users 
             SET name = ? 
@@ -76,10 +72,6 @@ export const changeGender = async (req, res) => {
             return res.status(401).json({
                 message: "Akses ditolak. Identitas tidak ditemukan dari Gateway."
             });
-        }
-
-        if (!gender) {
-            return res.status(400).json({ message: "Gender tidak boleh kosong." });
         }
 
         const query = `
@@ -112,10 +104,6 @@ export const changeDOB = async (req, res) => {
             });
         }
 
-        if (!dob) {
-            return res.status(400).json({ message: "Tanggal lahir tidak boleh kosong." });
-        }
-
         const query = `
             UPDATE users 
             SET dob = ? 
@@ -144,10 +132,6 @@ export const changeAvatarUrl = async (req, res) => {
             return res.status(401).json({
                 message: "Akses ditolak. Identitas tidak ditemukan dari Gateway."
             });
-        }
-
-        if (!avatar_url) {
-            return res.status(400).json({ message: "URL avatar tidak boleh kosong." });
         }
 
         const query = `

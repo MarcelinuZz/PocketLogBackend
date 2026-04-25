@@ -16,10 +16,6 @@ export const requestChangePasswordOTP = async (req, res) => {
             });
         }
 
-        if (!oldPassword) {
-            return res.status(400).json({ message: "Password lama wajib diisi." });
-        }
-
         const [passwordRows] = await db.query(
             'SELECT hashed_password FROM user_passwords WHERE user_id = ?',
             [userId]
@@ -78,17 +74,9 @@ export const confirmChangePassword = async (req, res) => {
             });
         }
 
-        if (!otpCode || !newPassword || !challengeToken) {
-            return res.status(400).json({ message: "Kode OTP, password baru, dan challenge token wajib diisi." });
-        }
-
         const tokenResult = verifyChallengeToken(challengeToken, 'change_password', userId);
         if (!tokenResult.valid) {
             return res.status(403).json({ message: tokenResult.message });
-        }
-
-        if (newPassword.length < 6) {
-            return res.status(400).json({ message: "Password baru minimal 6 karakter." });
         }
 
         const [otpRows] = await db.query(
@@ -128,15 +116,6 @@ export const requestChangeEmailOTP = async (req, res) => {
             return res.status(401).json({
                 message: "Akses ditolak. Identitas tidak ditemukan dari Gateway."
             });
-        }
-
-        if (!newEmail) {
-            return res.status(400).json({ message: "Email baru wajib diisi." });
-        }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(newEmail)) {
-            return res.status(400).json({ message: "Format email tidak valid." });
         }
 
         const [existingEmail] = await db.query(
@@ -196,10 +175,6 @@ export const confirmChangeEmail = async (req, res) => {
             });
         }
 
-        if (!otpCode || !challengeToken) {
-            return res.status(400).json({ message: "Kode OTP dan challenge token wajib diisi." });
-        }
-
         const tokenResult = verifyChallengeToken(challengeToken, 'change_email', userId);
         if (!tokenResult.valid) {
             return res.status(403).json({ message: tokenResult.message });
@@ -252,10 +227,6 @@ export const requestDeleteAccountOTP = async (req, res) => {
             return res.status(401).json({
                 message: "Akses ditolak. Identitas tidak ditemukan dari Gateway."
             });
-        }
-
-        if (!password) {
-            return res.status(400).json({ message: "Password wajib diisi untuk konfirmasi." });
         }
 
         const [passwordRows] = await db.query(
@@ -314,10 +285,6 @@ export const confirmDeleteAccount = async (req, res) => {
             return res.status(401).json({
                 message: "Akses ditolak. Identitas tidak ditemukan dari Gateway."
             });
-        }
-
-        if (!otpCode || !challengeToken) {
-            return res.status(400).json({ message: "Kode OTP dan challenge token wajib diisi." });
         }
 
         const tokenResult = verifyChallengeToken(challengeToken, 'delete_account', userId);
