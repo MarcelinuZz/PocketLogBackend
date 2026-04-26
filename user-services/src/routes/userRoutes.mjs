@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
-import { getMe, changeName, changeGender, changeDOB, changeAvatarUrl } from '../controllers/userController.mjs';
+import { getMe, changeName, changeGender, changeDOB, changeAvatarUrl, bindGoogle, unbindGoogle } from '../controllers/userController.mjs';
 import {
     requestChangePasswordOTP, confirmChangePassword,
     requestChangeEmailOTP, confirmChangeEmail,
@@ -75,5 +75,13 @@ router.post('/delete-account/confirm', [
     body("challengeToken").notEmpty().withMessage("Challenge token wajib diisi."),
     validateRequest
 ], confirmDeleteAccount);
+
+router.post('/bind-google', [
+    body("googleIdToken").notEmpty().withMessage("Google ID Token wajib diisi."),
+    validateRequest
+], bindGoogle);
+
+router.post('/unbind-google', unbindGoogle);
+
 
 export default router;
