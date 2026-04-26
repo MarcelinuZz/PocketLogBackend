@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
-import { getMe, changeName, changeGender, changeDOB, changeAvatarUrl, bindGoogle, unbindGoogle } from '../controllers/userController.mjs';
+import { getMe, changeName, changeGender, changeDOB, changeAvatarUrl, bindGoogle, unbindGoogle, CheckAuth } from '../controllers/userController.mjs';
 import {
     requestChangePasswordOTP, confirmChangePassword,
     requestChangeEmailOTP, confirmChangeEmail,
@@ -83,5 +83,6 @@ router.post('/bind-google', [
 
 router.post('/unbind-google', unbindGoogle);
 
+router.post('/check-auth', CheckAuth)
 
 export default router;

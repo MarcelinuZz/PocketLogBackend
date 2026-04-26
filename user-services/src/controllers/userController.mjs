@@ -236,3 +236,33 @@ export const unbindGoogle = async (req, res) => {
     }
 }
 
+export const CheckAuth = async (req, res) => {
+    try {
+        const userId = req.headers["x-user-id"];
+
+        if (!userId) {
+            return res.status(401).json({
+                message: "Akses ditolak. Identitas tidak ditemukan dari Gateway."
+            })
+        }
+
+        const query = `
+            SELECT * FROM users u JOIN user_passwords up ON u.id = up.user_id
+            WHERE u.id = ?
+        `
+        const [row] = await db.query(query, [userId])
+        if (row.length === 0) {
+            return res.status(200).json({
+                message: "ProviderAuth"
+            })
+        }
+
+        res.status(200).json({
+            message: "LocalAuth"
+        })
+
+    } catch (err) {
+        console.error("[User Controller Error - CheckAuth:", err)
+        res.status(500).json({ message: "Terjadi kesalahan saat mengecek authentikasi user" })
+    }
+}
