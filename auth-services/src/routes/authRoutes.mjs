@@ -22,12 +22,19 @@ router.post("/login-local", [
     validateRequest
 ], authController.loginLocal);
 
+router.post("/verify-email", [
+    body("email").isEmail().withMessage("Format email salah."),
+    validateRequest
+], authController.VerifyEmailReq);
+
 router.post("/register-local", [
     body("name").notEmpty().withMessage("Nama wajib diisi."),
     body("email").isEmail().withMessage("Format email salah."),
     body("gender").notEmpty().withMessage("Gender wajib diisi."),
     body("dob").isDate().withMessage("Format tanggal salah."),
     body("password").isLength({ min: 6 }).withMessage("Password minimal 6 karakter."),
+    body("challengeToken").notEmpty().withMessage("chalangeToken wajib diberikan."),
+    body("otpCode").notEmpty().withMessage("otpCode wajib diberikan."),
     validateRequest
 ], authController.registerLocal);
 

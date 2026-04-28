@@ -11,7 +11,8 @@ const transporter = nodemailer.createTransport({
 const actionLabels = {
     change_password: 'Ubah Password',
     change_email: 'Ubah Email',
-    delete_account: 'Hapus Akun'
+    delete_account: 'Hapus Akun',
+    verify_email: 'Verifikasi Email'
 };
 
 export async function sendOTPEmail(toEmail, otpCode, actionType) {
