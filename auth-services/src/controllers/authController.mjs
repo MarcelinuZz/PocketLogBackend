@@ -4,8 +4,12 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import randomizedIds from "../utils/randomizedIds.mjs";
 import crypto from "crypto";
+import generateOTP from "../utils/generateOTP.mjs";
+import signChallengeToken from "../utils/signChallengeToken.mjs";
+import sendOTPViaEmailService from "../utils/sendOTPViaEmailServices.mjs";
+import verifyChallengeToken from "../utils/verifyChalengeToken.mjs";
 
-export const authCodes = new Map(); 
+export const authCodes = new Map();
 
 const authenticateAsync = (req, res, next) => {
     return new Promise((resolve, reject) => {
@@ -40,10 +44,54 @@ export const loginLocal = async (req, res, next) => {
     }
 };
 
+export const VerifyEmailReq = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const [ValidEmail] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+        if (ValidEmail.length !== 0) {
+            return res.status(409).json({ message: "Email Sudah Terdaftar" });
+        }
+
+        const OTP = generateOTP();
+        const expiretAt = new Date(Date.now() + 5 * 60 * 1000);
+
+        await db.query("DELETE FROM register_otps WHERE email = ?", [email])
+        await db.query("INSERT INTO register_otps (email, otp_code, expires_at) VALUES (?, ?, ?)", [email, OTP, expiretAt])
+
+        await sendOTPViaEmailService(email, OTP, "verify_email");
+
+        const challengeToken = signChallengeToken(email, "verify_email")
+
+        res.status(200).json({
+            message: "Kode OTP berhasil dikirim",
+            challengeToken
+        })
+
+    } catch (err) {
+        return res.status(500).json({ message: "Gagal Verifikasi Email", error: err.message })
+    }
+}
+
 export const registerLocal = async (req, res, next) => {
     try {
-        const { name, gender, dob, email, avatarUrl, password } = req.body;
+        const { name, gender, dob, email, avatarUrl, password, challengeToken, otpCode } = req.body;
         let id = await randomizedIds();
+
+        const verify = verifyChallengeToken(challengeToken, "verify_email", email);
+        if (!verify.valid) {
+            return res.status(400).json({ message: verify.message });
+        }
+
+        const [row] = await db.query("SELECT email FROM register_otps WHERE email = ? AND otp_code = ? AND expires_at > NOW()", [email, otpCode]);
+        if (row.length === 0) {
+            return res.status(400).json({ message: "Kode OTP tidak valid atau kadaluarsa." });
+        }
+
+        const [ValidEmail] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+        if (ValidEmail.length !== 0) {
+            return res.status(409).json({ message: "Email Sudah Terdaftar" });
+        }
 
         const query = `INSERT INTO users (id, name, gender, dob, email, avatar_url) VALUES (?, ?, ?, ?, ?, ?)`;
         await db.query(query, [id, name, gender, dob, email, avatarUrl]);
@@ -51,6 +99,8 @@ export const registerLocal = async (req, res, next) => {
         const query2 = `INSERT INTO user_passwords (user_id, hashed_password) VALUES (?, ?)`;
         const hashedPassword = await bcrypt.hash(password, 11);
         await db.query(query2, [id, hashedPassword]);
+
+        await db.query("DELETE FROM register_otps WHERE email = ?", [email]);
 
         res.status(200).json({ message: "Register Berhasil" });
     } catch (err) {
@@ -82,7 +132,7 @@ export const googleCallback = (req, res) => {
     const authCode = crypto.randomBytes(32).toString('hex');
     authCodes.set(authCode, { userId: req.user.id, expiresAt: Date.now() + 5 * 60 * 1000 });
     setTimeout(() => authCodes.delete(authCode), 5 * 60 * 1000);
-    
+
     const flutterAppUrl = process.env.FLUTTER_APP_URL || "http://localhost:5173/Home";
     res.redirect(`${flutterAppUrl}?authCode=${authCode}`);
 };
@@ -112,8 +162,8 @@ export const logout = async (req, res) => {
         const { refreshToken } = req.body;
 
         if (!authHeader || !refreshToken) {
-            return res.status(400).json({ 
-                message: "Logout gagal. Access Token dan Refresh Token wajib disertakan!" 
+            return res.status(400).json({
+                message: "Logout gagal. Access Token dan Refresh Token wajib disertakan!"
             });
         }
 
@@ -127,8 +177,8 @@ export const logout = async (req, res) => {
         }
 
         if (decodedAccess.sub !== decodedRefresh.sub) {
-            return res.status(403).json({ 
-                message: "Akses ditolak. Refresh Token tidak cocok dengan Access Token." 
+            return res.status(403).json({
+                message: "Akses ditolak. Refresh Token tidak cocok dengan Access Token."
             });
         }
 
