@@ -28,4 +28,10 @@ export const setupProxies = (app) => {
         pathRewrite: (path, req) => req.originalUrl
     }));
 
+    app.use('/categories', verifyToken, createProxyMiddleware({
+        target: 'http://localhost:3005',
+        changeOrigin: true,
+        pathRewrite: (path, req) => req.originalUrl
+    }));
+
 };
