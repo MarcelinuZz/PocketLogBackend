@@ -34,4 +34,10 @@ export const setupProxies = (app) => {
         pathRewrite: (path, req) => req.originalUrl
     }));
 
+    app.use('/transactions', verifyToken, createProxyMiddleware({
+        target: 'http://localhost:3006',
+        changeOrigin: true,
+        pathRewrite: (path, req) => req.originalUrl
+    }));
+
 };
