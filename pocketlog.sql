@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 25 Apr 2026 pada 16.50
+-- Waktu pembuatan: 30 Apr 2026 pada 10.18
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -31,7 +31,6 @@ CREATE TABLE `categories` (
   `id` varchar(36) NOT NULL,
   `user_id` varchar(36) DEFAULT NULL,
   `name` varchar(100) NOT NULL,
-  `type` varchar(20) NOT NULL,
   `icon_url` varchar(255) DEFAULT NULL,
   `color_hex` varchar(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -48,6 +47,27 @@ CREATE TABLE `otp_verifications` (
   `otp_code` varchar(6) NOT NULL,
   `action_type` varchar(50) NOT NULL,
   `target_value` varchar(255) DEFAULT NULL,
+  `expires_at` datetime NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `otp_verifications`
+--
+
+INSERT INTO `otp_verifications` (`id`, `user_id`, `otp_code`, `action_type`, `target_value`, `expires_at`, `created_at`) VALUES
+(1, '77501367-c570-4af8-930a-96b798f4feaa', '507441', 'change_password', NULL, '2026-04-26 21:30:05', '2026-04-26 14:25:05');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `register_otps`
+--
+
+CREATE TABLE `register_otps` (
+  `id` int(11) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `otp_code` varchar(6) NOT NULL,
   `expires_at` datetime NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -90,7 +110,9 @@ INSERT INTO `token_blacklist` (`id`, `token_id`, `expires_at`, `blacklisted_at`)
 (18, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4ZTVmOWNhYS02ZTQ2LTRhMzctODdlOC1lMDYxZWVlNTZlYzYiLCJpYXQiOjE3NzYwOTEwNTUsImV4cCI6MTc3NjA5NDY1NX0.sG-gHSz-xL98un-zIf199eBQWS-zDNUojiaPB7Gr25g', '2026-04-13 15:37:35', '2026-04-13 14:37:56'),
 (19, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4ZTVmOWNhYS02ZTQ2LTRhMzctODdlOC1lMDYxZWVlNTZlYzYiLCJpYXQiOjE3NzYwODk4OTYsImV4cCI6MTc3NjY5NDY5Nn0.G8-Kvwvvk1pJMpjcfZRsu9WnJ3SmV10flD-maPJfeDg', '2026-04-20 14:18:16', '2026-04-13 14:37:56'),
 (20, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NzUwMTM2Ny1jNTcwLTRhZjgtOTMwYS05NmI3OThmNGZlYWEiLCJpYXQiOjE3NzYxMDIxNDIsImV4cCI6MTc3NjEwNTc0Mn0.KAXn991umy19Q5hlYji-u9etYJ9jJaT2Ht0r7rF52pc', '2026-04-13 18:42:22', '2026-04-13 17:43:03'),
-(21, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NzUwMTM2Ny1jNTcwLTRhZjgtOTMwYS05NmI3OThmNGZlYWEiLCJpYXQiOjE3NzYxMDIxNDIsImV4cCI6MTc3NjEwNTc0Mn0.KAXn991umy19Q5hlYji-u9etYJ9jJaT2Ht0r7rF52pc', '2026-04-13 18:42:22', '2026-04-13 17:43:03');
+(21, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NzUwMTM2Ny1jNTcwLTRhZjgtOTMwYS05NmI3OThmNGZlYWEiLCJpYXQiOjE3NzYxMDIxNDIsImV4cCI6MTc3NjEwNTc0Mn0.KAXn991umy19Q5hlYji-u9etYJ9jJaT2Ht0r7rF52pc', '2026-04-13 18:42:22', '2026-04-13 17:43:03'),
+(22, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyYjhiNDlhNy1mMmM3LTQ0NmUtOWU0Yy00OGQwYTZjMzA2MTkiLCJpYXQiOjE3Nzc1MzE5MDcsImV4cCI6MTc3NzUzNTUwN30.lPno57w1xJcTMNlUc5T-WH-Zm0CwxozDt61KTT5OHhY', '2026-04-30 07:51:47', '2026-04-30 07:07:49'),
+(23, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyYjhiNDlhNy1mMmM3LTQ0NmUtOWU0Yy00OGQwYTZjMzA2MTkiLCJpYXQiOjE3Nzc1MzE5MDcsImV4cCI6MTc3ODEzNjcwN30.1HW62X_ZRaL9M6WODXu_HQmq1h3ZfmXYWONzO0kiGJ4', '2026-05-07 06:51:47', '2026-04-30 07:07:49');
 
 -- --------------------------------------------------------
 
@@ -135,13 +157,14 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `name`, `gender`, `DOB`, `email`, `avatar_url`, `created_at`) VALUES
 ('0c982661-a29b-4667-b02d-2326eab4973d', 'Owen', 'Female', '2003-07-24', 'Owenn@gmail.com', '', '2026-04-02 16:55:55'),
-('4049a9ee-2e90-11f1-98b5-3c7c3fec23a4', 'Linus', 'Male', '2026-04-15', 'wijayaoeymarcelinus@gmail.com', NULL, '2026-04-02 12:34:07'),
+('2b8b49a7-f2c7-446e-9e4c-48d0a6c30619', 'Linus', 'Male', '2001-04-14', 'wijayaoeymarcelinus@gmail.com', '', '2026-04-26 14:45:17'),
 ('6fa45bfc-1bd6-4656-8cc6-a115e039f5ff', 'Albert', 'Male', '2006-04-02', 'wilsonalbert@gmail.com', '', '2026-04-02 16:50:01'),
-('77501367-c570-4af8-930a-96b798f4feaa', 'OwenZz', 'Male', '2003-07-04', 'Owennias@gmail.com', '', '2026-04-13 10:38:29'),
+('77501367-c570-4af8-930a-96b798f4feaa', 'OwenZ', 'Female', '2004-07-11', 'Owennias@gmail.com', 'https://airbrush.com/image-enhancer', '2026-04-13 10:38:29'),
 ('8e5f9caa-6e46-4a37-87e8-e061eee56ec6', 'Maruseru Rinusu', NULL, NULL, 'rinusu123@gmail.com', 'https://lh3.googleusercontent.com/a/ACg8ocKuVLTNr1CVNNPrPGHoxBgGn2YkMvH52auWqxpGUf9llNQApA=s96-c', '2026-04-13 10:50:53'),
 ('ac9dde04-1570-4d1d-882a-d69a74624a14', 'Oweniass', 'Male', '2003-07-04', 'Owenniass@gmail.com', '', '2026-04-13 13:14:13'),
-('cb3735de-5ce2-40b2-94de-cfad422ae928', 'Owenia', 'Male', '2003-07-04', 'Owennia@gmail.com', '', '2026-04-03 16:04:05'),
-('ce20641b-e427-49a4-9f67-ef4afa9f572a', 'Albertus', 'Male', '2006-07-02', 'wilsonalbertus@gmail.com', '', '2026-04-02 16:51:16');
+('cb3735de-5ce2-40b2-94de-cfad422ae928', 'Owenzz', 'Female', '2004-07-21', 'Owennia@gmail.com', 'https://airbrush.com/image-enhance', '2026-04-03 16:04:05'),
+('ce20641b-e427-49a4-9f67-ef4afa9f572a', 'Albertus', 'Male', '2006-07-02', 'wilsonalbertus@gmail.com', '', '2026-04-02 16:51:16'),
+('e87a2f37-0ff7-4ce2-b492-d077a8b1eaf5', 'Linus2006', 'Male', '2001-04-14', 'wijayaoeymarcelinus2006@gmail.com', '', '2026-04-28 05:43:09');
 
 -- --------------------------------------------------------
 
@@ -161,6 +184,7 @@ CREATE TABLE `user_identities` (
 --
 
 INSERT INTO `user_identities` (`id`, `user_id`, `provider`, `provider_id`) VALUES
+('0aa189a0-a918-46d3-9a98-806e88ab2d67', '2b8b49a7-f2c7-446e-9e4c-48d0a6c30619', 'google', '101357322244149981937'),
 ('166398c5-7202-4656-9b7c-ab5f6dfa2493', '8e5f9caa-6e46-4a37-87e8-e061eee56ec6', 'google', '108553418755461759779');
 
 -- --------------------------------------------------------
@@ -193,10 +217,11 @@ CREATE TABLE `user_passwords` (
 
 INSERT INTO `user_passwords` (`user_id`, `hashed_password`) VALUES
 ('0c982661-a29b-4667-b02d-2326eab4973d', '$2b$11$DGQ67DYvLJTrcO.AVjYrbupZSsDFsXmPdRUkrJjarIjloHLdEplxG'),
-('4049a9ee-2e90-11f1-98b5-3c7c3fec23a4', 'abcd1234'),
+('2b8b49a7-f2c7-446e-9e4c-48d0a6c30619', '$2b$11$PjnFpP7SgOegRPG0IvGQgO/Bzys007IqXwpcGq6aGkMVs.eo/bi.C'),
 ('77501367-c570-4af8-930a-96b798f4feaa', '$2b$11$Okw/vaR1SYTw5GLn7gIwvOOWkPGccxPkhqteABKMytwmJgb6J0UL6'),
 ('ac9dde04-1570-4d1d-882a-d69a74624a14', '$2b$11$XWBOF.zTm3fWSIG/jLMCLePnxilpG3bTvG4R6HxdxolIVECaGM5NK'),
-('cb3735de-5ce2-40b2-94de-cfad422ae928', '$2b$11$nmc0DnZ2rAAptKvVVs95Du6L/BKZGhxFgw/VqYj9HkmuCDkbHQe2i');
+('cb3735de-5ce2-40b2-94de-cfad422ae928', '$2b$11$nmc0DnZ2rAAptKvVVs95Du6L/BKZGhxFgw/VqYj9HkmuCDkbHQe2i'),
+('e87a2f37-0ff7-4ce2-b492-d077a8b1eaf5', '$2b$11$XPVNdzT8WA2a6hC.RZJI0ukLwbX1nF5Nvo6MQR6KwdQg/QIQY.RoW');
 
 -- --------------------------------------------------------
 
@@ -228,6 +253,15 @@ CREATE TABLE `wallets` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Dumping data untuk tabel `wallets`
+--
+
+INSERT INTO `wallets` (`id`, `user_id`, `name`, `account_number`, `balance`, `color_hex`, `created_at`) VALUES
+('6fcc255a-2d0c-4bf5-bd8e-d981c94418c8', '2b8b49a7-f2c7-446e-9e4c-48d0a6c30619', 'BLU', '2355543645', 0.00, '#fcba03', '2026-04-30 06:54:28'),
+('747e7c56-daf0-4d5e-b666-f45ec10268af', '2b8b49a7-f2c7-446e-9e4c-48d0a6c30619', 'BCA', '325367346', 0.00, '#fcba03', '2026-04-30 07:32:42'),
+('9e923da5-9f99-4559-b457-16ccb676cd69', '2b8b49a7-f2c7-446e-9e4c-48d0a6c30619', 'BBA', '123870192831', 0.00, '#j33aa', '2026-04-30 06:53:40');
+
+--
 -- Indexes for dumped tables
 --
 
@@ -244,6 +278,12 @@ ALTER TABLE `categories`
 ALTER TABLE `otp_verifications`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
+
+--
+-- Indeks untuk tabel `register_otps`
+--
+ALTER TABLE `register_otps`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indeks untuk tabel `token_blacklist`
@@ -311,13 +351,19 @@ ALTER TABLE `wallets`
 -- AUTO_INCREMENT untuk tabel `otp_verifications`
 --
 ALTER TABLE `otp_verifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT untuk tabel `register_otps`
+--
+ALTER TABLE `register_otps`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT untuk tabel `token_blacklist`
 --
 ALTER TABLE `token_blacklist`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT untuk tabel `user_notification`
@@ -389,10 +435,9 @@ CREATE DEFINER=`root`@`localhost` EVENT `clean_expired_tokens` ON SCHEDULE EVERY
   DELETE FROM token_blacklist WHERE expires_at < NOW();
 END$$
 
-CREATE DEFINER=`root`@`localhost` EVENT `daily_cleanup_otp` ON SCHEDULE EVERY 1 DAY STARTS '2026-04-25 21:47:44' ON COMPLETION NOT PRESERVE ENABLE COMMENT 'Membersihkan OTP yang sudah luput setiap hari pada waktu trafik' DO BEGIN
-    -- Menghapus rekod yang masanya sudah melewati waktu sekarang
-    DELETE FROM otp_verifications 
-    WHERE expires_at < NOW();
+CREATE DEFINER=`root`@`localhost` EVENT `daily_cleanup_otp` ON SCHEDULE EVERY 1 DAY STARTS '2026-04-28 00:00:00' ON COMPLETION NOT PRESERVE ENABLE COMMENT 'Membersihkan OTP yang sudah luput setiap hari pada waktu trafik' DO BEGIN
+    DELETE FROM otp_verifications WHERE expires_at < NOW();
+    DELETE FROM register_otps WHERE expires_at < NOW();
 END$$
 
 DELIMITER ;
