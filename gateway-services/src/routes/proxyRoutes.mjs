@@ -22,4 +22,10 @@ export const setupProxies = (app) => {
         pathRewrite: (path, req) => req.originalUrl
     }));
 
+    app.use('/wallets', verifyToken, createProxyMiddleware({
+        target: 'http://localhost:3004',
+        changeOrigin: true,
+        pathRewrite: (path, req) => req.originalUrl
+    }));
+
 };

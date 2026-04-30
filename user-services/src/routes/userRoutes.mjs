@@ -22,22 +22,22 @@ const validateRequest = (req, res, next) => {
 
 router.get('/me', getMe);
 
-router.post('/change-name', [
+router.patch('/change-name', [
     body("name").notEmpty().withMessage("Nama tidak boleh kosong."),
     validateRequest
 ], changeName);
 
-router.post('/change-gender', [
+router.patch('/change-gender', [
     body("gender").notEmpty().withMessage("Gender tidak boleh kosong."),
     validateRequest
 ], changeGender);
 
-router.post('/change-dob', [
+router.patch('/change-dob', [
     body("dob").notEmpty().withMessage("Tanggal lahir tidak boleh kosong."),
     validateRequest
 ], changeDOB);
 
-router.post('/change-avatar-url', [
+router.patch('/change-avatar-url', [
     body("avatar_url").notEmpty().withMessage("URL avatar tidak boleh kosong."),
     validateRequest
 ], changeAvatarUrl);
