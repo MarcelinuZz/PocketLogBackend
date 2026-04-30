@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "main": "app.mjs",
   "scripts": {
-    "dev": "concurrently \"npm run dev:gateway\" \"npm run dev:auth\" \"npm run dev:user\" \"npm run dev:email\" \"npm run dev:wallet\"",
+    "dev": "concurrently \"npm run dev:gateway\" \"npm run dev:auth\" \"npm run dev:user\" \"npm run dev:email\" \"npm run dev:wallet\" \"npm run dev:category\"",
     "dev:gateway": "cd gateway-services && npm run start:dev",
     "dev:auth": "cd auth-services && npm run start:dev",
     "dev:user": "cd user-services && npm run start:dev",
     "dev:email": "cd email-services && npm run start:dev",
-    "dev:wallet": "cd wallet-services && npm run start:dev"
+    "dev:wallet": "cd wallet-services && npm run start:dev",
+    "dev:category": "cd category-services && npm run start:dev"
   },
   "keywords": [],
   "author": "",
