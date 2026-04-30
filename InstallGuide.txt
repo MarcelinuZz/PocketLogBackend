@@ -1,4 +1,13 @@
 ====================================
+  SQL
+====================================
+Jalankan query ini terlebih dahulu sebagai default category untuk transfer
+
+INSERT INTO categories (id, user_id, name, icon_url, color_hex) 
+VALUES ('7f2b3e4a-9c1d-4b8f-a2e5-6d7c8b9a0f1e', NULL, 'Transfer', 'ic_swap_horiz', '#9E9E9E');
+
+
+====================================
   PocketLog Backend — Install Guide
 ====================================
 
@@ -68,6 +77,34 @@ File .env:
   SMTP_PASSWORD="your_gmail_app_password"
   INTERNAL_API_KEY="your_internal_api_key"
 
+5. WALLET SERVICE (Folder: wallet-services)
+-----------------------------------------
+npm init -y
+npm i express dotenv mysql2 express-validator
+npm i -D nodemon
+
+File .env:
+  PORT=3004
+
+6. CATEGORY SERVICE (Folder: category-services)
+-----------------------------------------
+npm init -y
+npm i express dotenv mysql2 express-validator
+npm i -D nodemon
+
+File .env:
+  PORT=3005
+
+7. TRANSACTION SERVICE (Folder: transaction-services)
+-----------------------------------------
+npm init -y
+npm i express dotenv mysql2 express-validator
+npm i -D nodemon
+
+File .env:
+  PORT=3006
+
+
 ====================================================
   Menjalankan Semua Service
 ====================================================
@@ -76,7 +113,10 @@ Dari root folder (PocketLogBackend):
   npm run dev
 
 Atau jalankan masing-masing:
-  npm run dev:gateway   → Gateway  (:3000)
-  npm run dev:auth      → Auth     (:3001)
-  npm run dev:user      → User     (:3002)
-  npm run dev:email     → Email    (:3003)
+  npm run dev:gateway      → Gateway      (:3000)
+  npm run dev:auth         → Auth         (:3001)
+  npm run dev:user         → User         (:3002)
+  npm run dev:email        → Email        (:3003)
+  npm run dev:wallet       → Wallet       (:3004)
+  npm run dev:category     → Category     (:3005)
+  npm run dev:transaction  → Transaction  (:3006)
