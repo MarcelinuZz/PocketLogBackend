@@ -1,0 +1,18 @@
+{
+  "name": "reminder-services",
+  "version": "1.0.0",
+  "main": "src/app.mjs",
+  "type": "module",
+  "scripts": {
+    "start:dev": "nodemon ./src/app.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "express-validator": "^7.3.2",
+    "mysql2": "^3.20.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
