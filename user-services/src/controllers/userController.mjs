@@ -266,3 +266,62 @@ export const CheckAuth = async (req, res) => {
         res.status(500).json({ message: "Terjadi kesalahan saat mengecek authentikasi user" })
     }
 }
+
+export const changeSettings = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'];
+        const { currency, appearance, language } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({
+                message: "Akses ditolak. Identitas tidak ditemukan dari Gateway."
+            });
+        }
+
+        if (currency === undefined && appearance === undefined && language === undefined) {
+            return res.status(400).json({
+                message: "Tidak ada pengaturan yang diubah."
+            });
+        }
+
+        const [existing] = await db.query("SELECT * FROM user_settings WHERE user_id = ?", [userId]);
+
+        let newCurrency = currency;
+        let newAppearance = appearance;
+        let newLanguage = language;
+
+        if (existing.length > 0) {
+            const current = existing[0];
+            if (newCurrency === undefined) newCurrency = current.currency;
+            if (newAppearance === undefined) newAppearance = current.appearance;
+            if (newLanguage === undefined) newLanguage = current.language;
+
+            await db.query(
+                "UPDATE user_settings SET currency = ?, appearance = ?, language = ? WHERE user_id = ?",
+                [newCurrency, newAppearance, newLanguage, userId]
+            );
+        } else {
+            if (newCurrency === undefined) newCurrency = 'IDR';
+            if (newAppearance === undefined) newAppearance = 'Light';
+            if (newLanguage === undefined) newLanguage = 'English';
+
+            await db.query(
+                "INSERT INTO user_settings (user_id, currency, appearance, language) VALUES (?, ?, ?, ?)",
+                [userId, newCurrency, newAppearance, newLanguage]
+            );
+        }
+
+        res.status(200).json({
+            message: "Pengaturan berhasil diubah",
+            data: {
+                currency: newCurrency,
+                appearance: newAppearance,
+                language: newLanguage
+            }
+        });
+
+    } catch (err) {
+        console.error("[User Controller Error - changeSettings]:", err);
+        res.status(500).json({ message: "Terjadi kesalahan saat mengubah pengaturan." });
+    }
+};

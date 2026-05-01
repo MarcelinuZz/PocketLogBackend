@@ -41,12 +41,15 @@ export default function passportGoogleStrategy() {
             const userGender = profile.gender || (profile._json && profile._json.gender) || null;
             const avatarUrl = profile.photos?.[0]?.value || null;
 
+            const insertSettingsQuery = `INSERT INTO user_settings (user_id) VALUES (?)`
+
             const connection = await db.getConnection();
             try {
                 await connection.beginTransaction();
 
                 await connection.query(insertQuery, [id, profile.displayName, userGender, dobString, profile.emails[0].value, avatarUrl]);
                 await connection.query(insertIdentityQuery, [identityId, id, "google", profile.id]);
+                await connection.query(insertSettingsQuery, [id]);
 
                 await connection.commit();
                 connection.release();

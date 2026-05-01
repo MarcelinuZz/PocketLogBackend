@@ -100,6 +100,9 @@ export const registerLocal = async (req, res, next) => {
         const hashedPassword = await bcrypt.hash(password, 11);
         await db.query(query2, [id, hashedPassword]);
 
+        const query3 = `INSERT INTO user_settings (user_id) VALUES (?)`;
+        await db.query(query3, [id]);
+
         await db.query("DELETE FROM register_otps WHERE email = ?", [email]);
 
         res.status(200).json({ message: "Register Berhasil" });
