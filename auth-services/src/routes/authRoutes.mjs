@@ -2,6 +2,8 @@ import { Router } from "express";
 import { body, validationResult } from 'express-validator';
 import passport from "passport";
 import * as authController from "../controllers/authController.mjs";
+import * as userProfileController from "../controllers/userProfileController.mjs";
+import * as accountController from "../controllers/accountController.mjs";
 
 const router = Router();
 
@@ -15,6 +17,7 @@ const validateRequest = (req, res, next) => {
     }
     next();
 };
+
 
 router.post("/login-local", [
     body("username").notEmpty().withMessage("Username wajib diisi."),

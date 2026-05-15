@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
-import { createReminder, getAllReminders, getReminderDetail, editReminder, toggleReminder, deleteReminder } from '../controllers/reminderController.mjs';
+import { createReminder, getAllReminders, getReminderDetail, editReminder, toggleReminder, deleteReminder,
+         deleteRemindersByUserId } from '../controllers/reminderController.mjs';
 import { createNotificationHistory, getNotificationHistory } from '../controllers/notificationHistoryController.mjs';
+import { internalAuth } from '../middleware/internalAuthMiddleware.mjs';
 
 const router = Router();
 
@@ -45,5 +47,7 @@ router.post('/history/create', [
     body("reminder_id").notEmpty().withMessage("ID reminder wajib diisi."),
     validateRequest
 ], createNotificationHistory);
+
+router.delete('/internal/by-user/:userId', internalAuth, deleteRemindersByUserId);
 
 export default router;

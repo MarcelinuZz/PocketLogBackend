@@ -4,8 +4,9 @@ import {
     addTransactionIncomeExpense, addTransactionTransfer,
     getAllTransactions, getRecentTransactions, getTransactionDetail,
     getTransactionsByDate, editTransactionIncomeExpense, editTransactionTransfer,
-    deleteTransaction, getCategoryBreakdown
+    deleteTransaction, getCategoryBreakdown, deleteTransactionsByUserId
 } from '../controllers/transactionController.mjs';
+import { internalAuth } from '../middleware/internalAuthMiddleware.mjs';
 
 const router = Router();
 
@@ -69,5 +70,7 @@ router.put('/edit-transfer/:id', [
 ], editTransactionTransfer);
 
 router.delete('/delete/:id', deleteTransaction);
+
+router.delete('/internal/by-user/:userId', internalAuth, deleteTransactionsByUserId);
 
 export default router;

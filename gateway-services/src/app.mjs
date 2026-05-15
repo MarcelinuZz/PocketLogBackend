@@ -1,6 +1,6 @@
+import 'dotenv/config';
 import express from 'express';
 import { setupProxies } from './routes/proxyRoutes.mjs';
-import 'dotenv/config';
 
 
 const app = express();

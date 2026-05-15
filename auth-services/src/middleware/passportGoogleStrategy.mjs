@@ -1,12 +1,11 @@
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import passport from "passport";
 import db from "../config/dbConfig.mjs";
-import { query } from "express-validator";
 import randomizedIds from "../utils/randomizedIds.mjs";
+import { initUserSettings } from "../utils/userServiceClient.mjs";
 
 export default function passportGoogleStrategy() {
     passport.use(new GoogleStrategy({
-        // ubah dengan data client id dan client secret anda
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: `http://localhost:${process.env.PORT || 3001}/auth/google/callback`
@@ -41,15 +40,12 @@ export default function passportGoogleStrategy() {
             const userGender = profile.gender || (profile._json && profile._json.gender) || null;
             const avatarUrl = profile.photos?.[0]?.value || null;
 
-            const insertSettingsQuery = `INSERT INTO user_settings (user_id) VALUES (?)`
-
             const connection = await db.getConnection();
             try {
                 await connection.beginTransaction();
 
                 await connection.query(insertQuery, [id, profile.displayName, userGender, dobString, profile.emails[0].value, avatarUrl]);
                 await connection.query(insertIdentityQuery, [identityId, id, "google", profile.id]);
-                await connection.query(insertSettingsQuery, [id]);
 
                 await connection.commit();
                 connection.release();
@@ -60,6 +56,9 @@ export default function passportGoogleStrategy() {
             }
 
             const [newUser] = await db.query(Querys, [profile.id]);
+
+            initUserSettings(id).catch(err => console.error("[GoogleOAuth] Gagal init settings:", err));
+
             return done(null, newUser[0]);
 
         } catch (err) {

@@ -8,6 +8,7 @@ import generateOTP from "../utils/generateOTP.mjs";
 import signChallengeToken from "../utils/signChallengeToken.mjs";
 import sendOTPViaEmailService from "../utils/sendOTPViaEmailServices.mjs";
 import verifyChallengeToken from "../utils/verifyChalengeToken.mjs";
+import { initUserSettings } from "../utils/userServiceClient.mjs";
 
 export const authCodes = new Map();
 
@@ -93,17 +94,16 @@ export const registerLocal = async (req, res, next) => {
             return res.status(409).json({ message: "Email Sudah Terdaftar" });
         }
 
-        const query = `INSERT INTO users (id, name, gender, dob, email, avatar_url) VALUES (?, ?, ?, ?, ?, ?)`;
+        const query = `INSERT INTO users (id, name, gender, DOB, email, avatar_url) VALUES (?, ?, ?, ?, ?, ?)`;
         await db.query(query, [id, name, gender, dob, email, avatarUrl]);
 
         const query2 = `INSERT INTO user_passwords (user_id, hashed_password) VALUES (?, ?)`;
         const hashedPassword = await bcrypt.hash(password, 11);
         await db.query(query2, [id, hashedPassword]);
 
-        const query3 = `INSERT INTO user_settings (user_id) VALUES (?)`;
-        await db.query(query3, [id]);
-
         await db.query("DELETE FROM register_otps WHERE email = ?", [email]);
+
+        initUserSettings(id).catch(err => console.error("[Register] Gagal init settings:", err));
 
         res.status(200).json({ message: "Register Berhasil" });
     } catch (err) {
