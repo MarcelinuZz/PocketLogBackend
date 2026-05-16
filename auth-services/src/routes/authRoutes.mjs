@@ -4,6 +4,7 @@ import passport from "passport";
 import * as authController from "../controllers/authController.mjs";
 import * as userProfileController from "../controllers/userProfileController.mjs";
 import * as accountController from "../controllers/accountController.mjs";
+import { handleAvatarUpload } from "../middleware/uploadMiddleware.mjs";
 
 const router = Router();
 
@@ -30,16 +31,20 @@ router.post("/verify-email", [
     validateRequest
 ], authController.VerifyEmailReq);
 
-router.post("/register-local", [
-    body("name").notEmpty().withMessage("Nama wajib diisi."),
-    body("email").isEmail().withMessage("Format email salah."),
-    body("gender").notEmpty().withMessage("Gender wajib diisi."),
-    body("dob").isDate().withMessage("Format tanggal salah."),
-    body("password").isLength({ min: 6 }).withMessage("Password minimal 6 karakter."),
-    body("challengeToken").notEmpty().withMessage("chalangeToken wajib diberikan."),
-    body("otpCode").notEmpty().withMessage("otpCode wajib diberikan."),
-    validateRequest
-], authController.registerLocal);
+router.post("/register-local",
+    handleAvatarUpload,
+    [
+        body("name").notEmpty().withMessage("Nama wajib diisi."),
+        body("email").isEmail().withMessage("Format email salah."),
+        body("gender").notEmpty().withMessage("Gender wajib diisi."),
+        body("dob").isDate().withMessage("Format tanggal salah."),
+        body("password").isLength({ min: 6 }).withMessage("Password minimal 6 karakter."),
+        body("challengeToken").notEmpty().withMessage("chalangeToken wajib diberikan."),
+        body("otpCode").notEmpty().withMessage("otpCode wajib diberikan."),
+        validateRequest
+    ],
+    authController.registerLocal
+);
 
 router.post("/refresh-token", authController.refreshToken);
 

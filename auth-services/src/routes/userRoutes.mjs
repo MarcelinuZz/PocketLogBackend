@@ -2,6 +2,7 @@ import { Router } from "express";
 import { body, validationResult } from 'express-validator';
 import * as userProfileController from "../controllers/userProfileController.mjs";
 import * as accountController from "../controllers/accountController.mjs";
+import { handleAvatarUpload } from "../middleware/uploadMiddleware.mjs";
 
 const router = Router();
 
@@ -28,9 +29,10 @@ router.patch('/change-dob', [
     body("dob").notEmpty().withMessage("Tanggal lahir tidak boleh kosong."), validateRequest
 ], userProfileController.changeDOB);
 
-router.patch('/change-avatar-url', [
-    body("avatar_url").notEmpty().withMessage("URL avatar tidak boleh kosong."), validateRequest
-], userProfileController.changeAvatarUrl);
+router.patch('/change-avatar-url',
+    handleAvatarUpload,
+    userProfileController.changeAvatarUrl
+);
 
 router.post('/bind-google', [
     body("googleIdToken").notEmpty().withMessage("Google ID Token wajib diisi."), validateRequest

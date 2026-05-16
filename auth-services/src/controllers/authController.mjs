@@ -9,6 +9,8 @@ import signChallengeToken from "../utils/signChallengeToken.mjs";
 import sendOTPViaEmailService from "../utils/sendOTPViaEmailServices.mjs";
 import verifyChallengeToken from "../utils/verifyChalengeToken.mjs";
 import { initUserSettings } from "../utils/userServiceClient.mjs";
+import deleteUploadedFile from "../utils/deleteUploadFile.mjs";
+
 
 export const authCodes = new Map();
 
@@ -76,22 +78,30 @@ export const VerifyEmailReq = async (req, res) => {
 
 export const registerLocal = async (req, res, next) => {
     try {
-        const { name, gender, dob, email, avatarUrl, password, challengeToken, otpCode } = req.body;
+        const { name, gender, dob, email, password, challengeToken, otpCode } = req.body;
         let id = await randomizedIds();
 
         const verify = verifyChallengeToken(challengeToken, "verify_email", email);
         if (!verify.valid) {
+            deleteUploadedFile(req);
             return res.status(400).json({ message: verify.message });
         }
 
         const [row] = await db.query("SELECT email FROM register_otps WHERE email = ? AND otp_code = ? AND expires_at > NOW()", [email, otpCode]);
         if (row.length === 0) {
+            deleteUploadedFile(req);
             return res.status(400).json({ message: "Kode OTP tidak valid atau kadaluarsa." });
         }
 
         const [ValidEmail] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
         if (ValidEmail.length !== 0) {
+            deleteUploadedFile(req);
             return res.status(409).json({ message: "Email Sudah Terdaftar" });
+        }
+
+        let avatarUrl = null;
+        if (req.file) {
+            avatarUrl = `/public/avatars/${req.file.filename}`;
         }
 
         const query = `INSERT INTO users (id, name, gender, DOB, email, avatar_url) VALUES (?, ?, ?, ?, ?, ?)`;
@@ -107,6 +117,7 @@ export const registerLocal = async (req, res, next) => {
 
         res.status(200).json({ message: "Register Berhasil" });
     } catch (err) {
+        deleteUploadedFile(req);
         return res.status(500).json({ message: "Register Gagal", error: err.message });
     }
 };

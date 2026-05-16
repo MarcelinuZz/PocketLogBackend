@@ -118,7 +118,6 @@ export const confirmChangeEmail = async (req, res) => {
     }
 };
 
-// ─── Delete Account ──────────────────────────────────────────
 
 export const requestDeleteAccountOTP = async (req, res) => {
     try {

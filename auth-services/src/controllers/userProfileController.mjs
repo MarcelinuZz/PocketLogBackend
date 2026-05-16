@@ -1,5 +1,12 @@
 import db from '../config/dbConfig.mjs';
 import randomizedIds from '../utils/randomizedIds.mjs';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import deleteUploadedFile from "../utils/deleteUploadFile.mjs";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const getMe = async (req, res) => {
     try {
@@ -64,14 +71,37 @@ export const changeDOB = async (req, res) => {
 export const changeAvatarUrl = async (req, res) => {
     try {
         const userId = req.headers['x-user-id'];
-        const { avatar_url } = req.body;
-        if (!userId) return res.status(401).json({ message: "Akses ditolak. Identitas tidak ditemukan dari Gateway." });
+        if (!userId) {
+            deleteUploadedFile(req);
+            return res.status(401).json({ message: "Akses ditolak. Identitas tidak ditemukan dari Gateway." });
+        }
 
-        await db.query('UPDATE users SET avatar_url = ? WHERE id = ?', [avatar_url, userId]);
-        res.status(200).json({ message: "URL avatar berhasil diubah", data: { avatar_url } });
+        if (!req.file) {
+            return res.status(400).json({ message: "File avatar wajib diunggah." });
+        }
+
+        const newAvatarPath = `/public/avatars/${req.file.filename}`;
+
+        const [rows] = await db.query('SELECT avatar_url FROM users WHERE id = ?', [userId]);
+        const oldAvatarUrl = rows.length > 0 ? rows[0].avatar_url : null;
+
+        await db.query('UPDATE users SET avatar_url = ? WHERE id = ?', [newAvatarPath, userId]);
+
+        if (oldAvatarUrl && oldAvatarUrl.startsWith('/public/avatars/')) {
+            const oldFilename = path.basename(oldAvatarUrl);
+            const oldFilePath = path.join(__dirname, '../../public/avatars', oldFilename);
+            fs.unlink(oldFilePath, (err) => {
+                if (err && err.code !== 'ENOENT') {
+                    console.error('[changeAvatarUrl] Gagal hapus file lama:', err);
+                }
+            });
+        }
+
+        res.status(200).json({ message: "Avatar berhasil diubah", data: { avatar_url: newAvatarPath } });
     } catch (err) {
+        deleteUploadedFile(req);
         console.error("[UserProfile Error - changeAvatarUrl]:", err);
-        res.status(500).json({ message: "Terjadi kesalahan saat mengubah URL avatar." });
+        res.status(500).json({ message: "Terjadi kesalahan saat mengubah avatar." });
     }
 };
 

@@ -108,7 +108,6 @@ export const addTransactionTransfer = async (req, res) => {
         try {
             await adjustWalletBalance(to_wallet_id, amount, 'add');
         } catch (step2Err) {
-            // Compensation for step 1
             await adjustWalletBalance(from_wallet_id, amount, 'add').catch(compErr =>
                 console.error("[Saga Compensation FAILED - addTransfer Step1]:", compErr)
             );
