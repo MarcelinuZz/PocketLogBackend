@@ -31,8 +31,8 @@ export const loginLocal = async (req, res, next) => {
         }
 
         const payload = { sub: user.id };
-        const secret = process.env.JWT_SECRET || "Kj9!pL2#mN5*qR8@zX1^vB4&tY7(uI0PocketLog+dF9[gH2]jK5{lM8}nB1";
-        const refreshSecret = process.env.REFRESH_TOKEN_SECRET || "zX9!vB4&tY7(uI0)PocketLog+dF9[gH2]jK5{lM8}nB1@mN5*qR8#pL2$kJ7^hG4";
+        const secret = process.env.JWT_SECRET;
+        const refreshSecret = process.env.REFRESH_TOKEN_SECRET;
 
         const accessToken = jwt.sign(payload, secret, { expiresIn: '1h' });
         const refreshToken = jwt.sign(payload, refreshSecret, { expiresIn: '7d' });
@@ -133,10 +133,10 @@ export const refreshToken = async (req, res) => {
         return res.status(500).json({ message: "Kesalahan server saat memeriksa token." });
     }
 
-    const refreshSecret = process.env.REFRESH_TOKEN_SECRET || "zX9!vB4&tY7(uI0)PocketLog+dF9[gH2]jK5{lM8}nB1@mN5*qR8#pL2$kJ7^hG4";
+    const refreshSecret = process.env.REFRESH_TOKEN_SECRET;
     jwt.verify(refreshToken, refreshSecret, (err, userPayload) => {
         if (err) return res.status(403).json({ message: "Refresh token tidak valid." });
-        const secret = process.env.JWT_SECRET || "Kj9!pL2#mN5*qR8@zX1^vB4&tY7(uI0PocketLog+dF9[gH2]jK5{lM8}nB1";
+        const secret = process.env.JWT_SECRET;
         const newAccessToken = jwt.sign({ sub: userPayload.sub }, secret, { expiresIn: '1h' });
         res.status(200).json({ message: "Token diperbarui", accessToken: newAccessToken });
     });
@@ -160,8 +160,8 @@ export const exchangeToken = (req, res) => {
         return res.status(400).json({ message: "Auth code tidak valid atau kedaluwarsa." });
     }
 
-    const secret = process.env.JWT_SECRET || "Kj9!pL2#mN5*qR8@zX1^vB4&tY7(uI0PocketLog+dF9[gH2]jK5{lM8}nB1";
-    const refreshSecret = process.env.REFRESH_TOKEN_SECRET || "zX9!vB4&tY7(uI0)PocketLog+dF9[gH2]jK5{lM8}nB1@mN5*qR8#pL2$kJ7^hG4";
+    const secret = process.env.JWT_SECRET;
+    const refreshSecret = process.env.REFRESH_TOKEN_SECRET;
 
     const accessToken = jwt.sign({ sub: codeData.userId }, secret, { expiresIn: '1h' });
     const refreshToken = jwt.sign({ sub: codeData.userId }, refreshSecret, { expiresIn: '7d' });

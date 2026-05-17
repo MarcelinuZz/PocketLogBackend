@@ -16,7 +16,7 @@ export const verifyToken = async (req, res, next) => {
             return res.status(403).json({ message: "Sesi telah berakhir. Silakan login kembali." });
         }
         
-        const secret = process.env.JWT_SECRET || "Kj9!pL2#mN5*qR8@zX1^vB4&tY7(uI0PocketLog+dF9[gH2]jK5{lM8}nB1";
+        const secret = process.env.JWT_SECRET;
         const decoded = jwt.verify(token, secret);
 
         req.headers['x-user-id'] = decoded.sub;
