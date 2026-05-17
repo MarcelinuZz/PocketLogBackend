@@ -8,6 +8,9 @@ import generateOTP from "../utils/generateOTP.mjs";
 import signChallengeToken from "../utils/signChallengeToken.mjs";
 import sendOTPViaEmailService from "../utils/sendOTPViaEmailServices.mjs";
 import verifyChallengeToken from "../utils/verifyChalengeToken.mjs";
+import { initUserSettings } from "../utils/userServiceClient.mjs";
+import deleteUploadedFile from "../utils/deleteUploadFile.mjs";
+
 
 export const authCodes = new Map();
 
@@ -28,8 +31,8 @@ export const loginLocal = async (req, res, next) => {
         }
 
         const payload = { sub: user.id };
-        const secret = process.env.JWT_SECRET || "Kj9!pL2#mN5*qR8@zX1^vB4&tY7(uI0PocketLog+dF9[gH2]jK5{lM8}nB1";
-        const refreshSecret = process.env.REFRESH_TOKEN_SECRET || "zX9!vB4&tY7(uI0)PocketLog+dF9[gH2]jK5{lM8}nB1@mN5*qR8#pL2$kJ7^hG4";
+        const secret = process.env.JWT_SECRET;
+        const refreshSecret = process.env.REFRESH_TOKEN_SECRET;
 
         const accessToken = jwt.sign(payload, secret, { expiresIn: '1h' });
         const refreshToken = jwt.sign(payload, refreshSecret, { expiresIn: '7d' });
@@ -75,38 +78,46 @@ export const VerifyEmailReq = async (req, res) => {
 
 export const registerLocal = async (req, res, next) => {
     try {
-        const { name, gender, dob, email, avatarUrl, password, challengeToken, otpCode } = req.body;
+        const { name, gender, dob, email, password, challengeToken, otpCode } = req.body;
         let id = await randomizedIds();
 
         const verify = verifyChallengeToken(challengeToken, "verify_email", email);
         if (!verify.valid) {
+            deleteUploadedFile(req);
             return res.status(400).json({ message: verify.message });
         }
 
         const [row] = await db.query("SELECT email FROM register_otps WHERE email = ? AND otp_code = ? AND expires_at > NOW()", [email, otpCode]);
         if (row.length === 0) {
+            deleteUploadedFile(req);
             return res.status(400).json({ message: "Kode OTP tidak valid atau kadaluarsa." });
         }
 
         const [ValidEmail] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
         if (ValidEmail.length !== 0) {
+            deleteUploadedFile(req);
             return res.status(409).json({ message: "Email Sudah Terdaftar" });
         }
 
-        const query = `INSERT INTO users (id, name, gender, dob, email, avatar_url) VALUES (?, ?, ?, ?, ?, ?)`;
+        let avatarUrl = null;
+        if (req.file) {
+            avatarUrl = `/public/avatars/${req.file.filename}`;
+        }
+
+        const query = `INSERT INTO users (id, name, gender, DOB, email, avatar_url) VALUES (?, ?, ?, ?, ?, ?)`;
         await db.query(query, [id, name, gender, dob, email, avatarUrl]);
 
         const query2 = `INSERT INTO user_passwords (user_id, hashed_password) VALUES (?, ?)`;
         const hashedPassword = await bcrypt.hash(password, 11);
         await db.query(query2, [id, hashedPassword]);
 
-        const query3 = `INSERT INTO user_settings (user_id) VALUES (?)`;
-        await db.query(query3, [id]);
-
         await db.query("DELETE FROM register_otps WHERE email = ?", [email]);
+
+        initUserSettings(id).catch(err => console.error("[Register] Gagal init settings:", err));
 
         res.status(200).json({ message: "Register Berhasil" });
     } catch (err) {
+        deleteUploadedFile(req);
         return res.status(500).json({ message: "Register Gagal", error: err.message });
     }
 };
@@ -122,10 +133,10 @@ export const refreshToken = async (req, res) => {
         return res.status(500).json({ message: "Kesalahan server saat memeriksa token." });
     }
 
-    const refreshSecret = process.env.REFRESH_TOKEN_SECRET || "zX9!vB4&tY7(uI0)PocketLog+dF9[gH2]jK5{lM8}nB1@mN5*qR8#pL2$kJ7^hG4";
+    const refreshSecret = process.env.REFRESH_TOKEN_SECRET;
     jwt.verify(refreshToken, refreshSecret, (err, userPayload) => {
         if (err) return res.status(403).json({ message: "Refresh token tidak valid." });
-        const secret = process.env.JWT_SECRET || "Kj9!pL2#mN5*qR8@zX1^vB4&tY7(uI0PocketLog+dF9[gH2]jK5{lM8}nB1";
+        const secret = process.env.JWT_SECRET;
         const newAccessToken = jwt.sign({ sub: userPayload.sub }, secret, { expiresIn: '1h' });
         res.status(200).json({ message: "Token diperbarui", accessToken: newAccessToken });
     });
@@ -149,8 +160,8 @@ export const exchangeToken = (req, res) => {
         return res.status(400).json({ message: "Auth code tidak valid atau kedaluwarsa." });
     }
 
-    const secret = process.env.JWT_SECRET || "Kj9!pL2#mN5*qR8@zX1^vB4&tY7(uI0PocketLog+dF9[gH2]jK5{lM8}nB1";
-    const refreshSecret = process.env.REFRESH_TOKEN_SECRET || "zX9!vB4&tY7(uI0)PocketLog+dF9[gH2]jK5{lM8}nB1@mN5*qR8#pL2$kJ7^hG4";
+    const secret = process.env.JWT_SECRET;
+    const refreshSecret = process.env.REFRESH_TOKEN_SECRET;
 
     const accessToken = jwt.sign({ sub: codeData.userId }, secret, { expiresIn: '1h' });
     const refreshToken = jwt.sign({ sub: codeData.userId }, refreshSecret, { expiresIn: '7d' });

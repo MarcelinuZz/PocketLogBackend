@@ -151,3 +151,32 @@ export const deleteCategory = async (req, res) => {
         res.status(500).json({ message: "Terjadi kesalahan saat menghapus kategori." });
     }
 };
+
+
+export const getCategoryByIdInternal = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [rows] = await db.query(
+            'SELECT id, name, icon_url, color_hex FROM categories WHERE id = ?',
+            [id]
+        );
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "Kategori tidak ditemukan." });
+        }
+        res.status(200).json({ data: rows[0] });
+    } catch (err) {
+        console.error("[Category Internal Error - GetById]:", err);
+        res.status(500).json({ message: "Internal error saat mengambil kategori." });
+    }
+};
+
+export const deleteCategoriesByUserId = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        await db.query('DELETE FROM categories WHERE user_id = ?', [userId]);
+        res.status(200).json({ message: `Semua kategori milik user ${userId} berhasil dihapus.` });
+    } catch (err) {
+        console.error("[Category Internal Error - DeleteByUser]:", err);
+        res.status(500).json({ message: "Internal error saat menghapus kategori user." });
+    }
+};

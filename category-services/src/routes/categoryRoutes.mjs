@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
-import { createCategory, getAllCategories, getCategoryById, editCategory, deleteCategory } from '../controllers/categoryController.mjs';
+import { createCategory, getAllCategories, getCategoryById, editCategory, deleteCategory,
+         getCategoryByIdInternal, deleteCategoriesByUserId } from '../controllers/categoryController.mjs';
+import { internalAuth } from '../middleware/internalAuthMiddleware.mjs';
 
 const router = Router();
 
@@ -23,6 +25,9 @@ router.post('/create-category', [
 ], createCategory);
 
 router.get('/', getAllCategories);
+
+router.get('/internal/:id', internalAuth, getCategoryByIdInternal);
+router.delete('/internal/by-user/:userId', internalAuth, deleteCategoriesByUserId);
 
 router.get('/:id', getCategoryById);
 

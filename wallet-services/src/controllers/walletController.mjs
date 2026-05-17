@@ -142,3 +142,64 @@ export const deleteWallet = async (req, res) => {
         res.status(500).json({ message: "Terjadi kesalahan saat menghapus dompet." });
     }
 };
+
+export const getWalletByIdInternal = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [rows] = await db.query(
+            'SELECT id, name, color_hex FROM wallets WHERE id = ?',
+            [id]
+        );
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "Wallet tidak ditemukan." });
+        }
+        res.status(200).json({ data: rows[0] });
+    } catch (err) {
+        console.error("[Wallet Internal Error - GetById]:", err);
+        res.status(500).json({ message: "Internal error saat mengambil wallet." });
+    }
+};
+
+
+export const adjustWalletBalance = async (req, res) => {
+    const connection = await db.getConnection();
+    try {
+        const { walletId, amount, operation } = req.body;
+
+        if (!walletId || !amount || !['add', 'subtract'].includes(operation)) {
+            return res.status(400).json({ message: "walletId, amount, dan operation ('add'|'subtract') wajib diisi." });
+        }
+
+        const sql = operation === 'add'
+            ? 'UPDATE wallets SET balance = balance + ? WHERE id = ?'
+            : 'UPDATE wallets SET balance = balance - ? WHERE id = ?';
+
+        await connection.beginTransaction();
+        const [result] = await connection.query(sql, [amount, walletId]);
+        await connection.commit();
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Wallet tidak ditemukan." });
+        }
+
+        res.status(200).json({ message: `Saldo berhasil di-${operation === 'add' ? 'tambah' : 'kurang'}.` });
+    } catch (err) {
+        await connection.rollback();
+        console.error("[Wallet Internal Error - AdjustBalance]:", err);
+        res.status(500).json({ message: "Internal error saat mengubah saldo." });
+    } finally {
+        connection.release();
+    }
+};
+
+
+export const deleteWalletsByUserId = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        await db.query('DELETE FROM wallets WHERE user_id = ?', [userId]);
+        res.status(200).json({ message: `Semua wallet milik user ${userId} berhasil dihapus.` });
+    } catch (err) {
+        console.error("[Wallet Internal Error - DeleteByUser]:", err);
+        res.status(500).json({ message: "Internal error saat menghapus wallet user." });
+    }
+};

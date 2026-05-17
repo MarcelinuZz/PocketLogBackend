@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
-import { createWallet, getAllWallets, deleteWallet, getWalletById, editWallet } from '../controllers/walletController.mjs';
+import { createWallet, getAllWallets, deleteWallet, getWalletById, editWallet,
+         getWalletByIdInternal, adjustWalletBalance, deleteWalletsByUserId } from '../controllers/walletController.mjs';
+import { internalAuth } from '../middleware/internalAuthMiddleware.mjs';
 
 const router = Router();
 
@@ -15,6 +17,7 @@ const validateRequest = (req, res, next) => {
     next();
 };
 
+
 router.post('/create-wallet/', [
     body("name").notEmpty().withMessage("Nama dompet tidak boleh kosong."),
     body("account_number").notEmpty().withMessage("Nomor rekening tidak boleh kosong."),
@@ -24,6 +27,10 @@ router.post('/create-wallet/', [
 ], createWallet);
 
 router.get('/', getAllWallets);
+
+router.get('/internal/:id', internalAuth, getWalletByIdInternal);
+router.post('/internal/adjust-balance', internalAuth, adjustWalletBalance);
+router.delete('/internal/by-user/:userId', internalAuth, deleteWalletsByUserId);
 
 router.get('/:id', getWalletById);
 

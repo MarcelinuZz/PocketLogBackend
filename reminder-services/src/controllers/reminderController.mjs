@@ -214,3 +214,16 @@ export const deleteReminder = async (req, res) => {
         res.status(500).json({ message: "Terjadi kesalahan saat menghapus reminder." });
     }
 };
+
+
+export const deleteRemindersByUserId = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        await db.query('DELETE FROM notification_history WHERE user_id = ?', [userId]);
+        await db.query('DELETE FROM reminders WHERE user_id = ?', [userId]);
+        res.status(200).json({ message: `Semua reminder dan notifikasi milik user ${userId} berhasil dihapus.` });
+    } catch (err) {
+        console.error("[Reminder Internal Error - DeleteByUser]:", err);
+        res.status(500).json({ message: "Internal error saat menghapus reminder user." });
+    }
+};

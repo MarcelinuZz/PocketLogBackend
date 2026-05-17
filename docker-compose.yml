@@ -1,0 +1,243 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: pocketlog-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_ROOT_PASSWORD: ""
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+
+  gateway:
+    build: ./gateway-services
+    container_name: pocketlog-gateway
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: ""
+      DB_NAME: pocketlog_auth
+      JWT_SECRET: "Kj9!pL2#mN5*qR8@zX1^vB4&tY7(uI0PocketLog+dF9[gH2]jK5{lM8}nB1"
+      REFRESH_TOKEN_SECRET: "zX9!vB4&tY7(uI0)PocketLog+dF9[gH2]jK5{lM8}nB1@mN5*qR8#pL2$$kJ7^hG4"
+      AUTH_SERVICE_URL: "http://auth:3001"
+      USER_SERVICE_URL: "http://user:3002"
+      EMAIL_SERVICE_URL: "http://email:3003"
+      WALLET_SERVICE_URL: "http://wallet:3004"
+      CATEGORY_SERVICE_URL: "http://category:3005"
+      TRANSACTION_SERVICE_URL: "http://transaction:3006"
+      REMINDER_SERVICE_URL: "http://reminder:3007"
+    depends_on:
+      - auth
+      - user
+      - wallet
+      - category
+      - transaction
+      - reminder
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./gateway-services/src
+          target: /app/src
+        - action: rebuild
+          path: ./gateway-services/package.json
+
+
+  auth:
+    build: ./auth-services
+    container_name: pocketlog-auth
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: ""
+      DB_NAME: pocketlog_auth
+      JWT_SECRET: "Kj9!pL2#mN5*qR8@zX1^vB4&tY7(uI0PocketLog+dF9[gH2]jK5{lM8}nB1"
+      REFRESH_TOKEN_SECRET: "zX9!vB4&tY7(uI0)PocketLog+dF9[gH2]jK5{lM8}nB1@mN5*qR8#pL2$$kJ7^hG4"
+      INTERNAL_API_KEY: "pocketlog_internal_s3cr3t_k3y_2026"
+      EMAIL_SERVICE_URL: "http://email:3003"
+      WALLET_SERVICE_URL: "http://wallet:3004"
+      CATEGORY_SERVICE_URL: "http://category:3005"
+      TRANSACTION_SERVICE_URL: "http://transaction:3006"
+      REMINDER_SERVICE_URL: "http://reminder:3007"
+      USER_SERVICE_URL: "http://user:3002"
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID:-your_google_client_id_here}"
+      GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET:-your_google_client_secret_here}"
+    volumes:
+      - auth_public:/app/public
+    depends_on:
+      mysql:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./auth-services/src
+          target: /app/src
+        - action: rebuild
+          path: ./auth-services/package.json
+
+
+  user:
+    build: ./user-services
+    container_name: pocketlog-user
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: 3002
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: ""
+      DB_NAME: pocketlog_user
+      INTERNAL_API_KEY: "pocketlog_internal_s3cr3t_k3y_2026"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./user-services/src
+          target: /app/src
+        - action: rebuild
+          path: ./user-services/package.json
+
+
+  email:
+    build: ./email-services
+    container_name: pocketlog-email
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    environment:
+      PORT: 3003
+      SMTP_EMAIL: "projeksoptware@gmail.com"
+      SMTP_PASSWORD: "utft wfbd fshe wdlk"
+      INTERNAL_API_KEY: "pocketlog_internal_s3cr3t_k3y_2026"
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./email-services/src
+          target: /app/src
+        - action: rebuild
+          path: ./email-services/package.json
+
+  wallet:
+    build: ./wallet-services
+    container_name: pocketlog-wallet
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    environment:
+      PORT: 3004
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: ""
+      DB_NAME: pocketlog_wallet
+      INTERNAL_API_KEY: "pocketlog_internal_s3cr3t_k3y_2026"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./wallet-services/src
+          target: /app/src
+        - action: rebuild
+          path: ./wallet-services/package.json
+
+  category:
+    build: ./category-services
+    container_name: pocketlog-category
+    restart: unless-stopped
+    ports:
+      - "3005:3005"
+    environment:
+      PORT: 3005
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: ""
+      DB_NAME: pocketlog_category
+      INTERNAL_API_KEY: "pocketlog_internal_s3cr3t_k3y_2026"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./category-services/src
+          target: /app/src
+        - action: rebuild
+          path: ./category-services/package.json
+
+  transaction:
+    build: ./transaction-services
+    container_name: pocketlog-transaction
+    restart: unless-stopped
+    ports:
+      - "3006:3006"
+    environment:
+      PORT: 3006
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: ""
+      DB_NAME: pocketlog_transaction
+      INTERNAL_API_KEY: "pocketlog_internal_s3cr3t_k3y_2026"
+      WALLET_SERVICE_URL: "http://wallet:3004"
+      CATEGORY_SERVICE_URL: "http://category:3005"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./transaction-services/src
+          target: /app/src
+        - action: rebuild
+          path: ./transaction-services/package.json
+
+  reminder:
+    build: ./reminder-services
+    container_name: pocketlog-reminder
+    restart: unless-stopped
+    ports:
+      - "3007:3007"
+    environment:
+      PORT: 3007
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: ""
+      DB_NAME: pocketlog_reminder
+      INTERNAL_API_KEY: "pocketlog_internal_s3cr3t_k3y_2026"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./reminder-services/src
+          target: /app/src
+        - action: rebuild
+          path: ./reminder-services/package.json
+
+volumes:
+  mysql_data:
+    driver: local
+  auth_public:
+    driver: local
