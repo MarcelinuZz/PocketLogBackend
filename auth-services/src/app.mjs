@@ -19,9 +19,10 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/public', express.static(path.join(__dirname, '../public')));
 
+app.use(passport.initialize());
+
 passportLocalStrategy();
 passportGoogleStrategy();
-app.use(passport.initialize());
 
 app.use('/auth', authRoutes);
 
