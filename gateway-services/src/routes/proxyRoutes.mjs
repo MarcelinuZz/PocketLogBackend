@@ -10,6 +10,12 @@ const REMINDER_URL    = process.env.REMINDER_SERVICE_URL    || 'http://localhost
 
 export const setupProxies = (app) => {
 
+    app.use('/public', createProxyMiddleware({
+        target: AUTH_URL,
+        changeOrigin: true,
+        pathRewrite: (path, req) => req.originalUrl
+    }));
+
     app.use('/auth/logout', verifyToken, createProxyMiddleware({
         target: AUTH_URL,
         changeOrigin: true,
