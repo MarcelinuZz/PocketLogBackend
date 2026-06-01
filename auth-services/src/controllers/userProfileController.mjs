@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import deleteUploadedFile from "../utils/deleteUploadFile.mjs";
+import { cascadeDeleteUserData } from '../utils/cascadeDeleteClient.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -149,17 +150,23 @@ export const unbindGoogle = async (req, res) => {
         if (!userId) return res.status(401).json({ message: "Akses ditolak. Identitas tidak ditemukan dari Gateway." });
 
         const [passwordRow] = await db.query("SELECT user_id FROM user_passwords WHERE user_id = ?", [userId]);
+        
         if (passwordRow.length === 0) {
-            return res.status(400).json({ message: "Anda tidak dapat memutus akun Google karena Anda belum membuat password lokal." });
+            await cascadeDeleteUserData(userId);
+            await db.query('DELETE FROM users WHERE id = ?', [userId]);
+            
+            return res.status(200).json({ message: "Akun berhasil dihapus secara permanen karena Anda tidak memiliki password lokal." });
         }
 
         const [result] = await db.query(
             "DELETE FROM user_identities WHERE user_id = ? AND provider = 'google'",
             [userId]
         );
+        
         if (result.affectedRows === 0) {
             return res.status(400).json({ message: "Tidak ada akun Google yang terhubung untuk diputus." });
         }
+        
         res.status(200).json({ message: "Akun Google berhasil diputus." });
     } catch (err) {
         console.error("[UserProfile Error - unbindGoogle]:", err);
