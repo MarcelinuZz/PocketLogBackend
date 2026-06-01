@@ -42,6 +42,9 @@ router.post('/unbind-google', userProfileController.unbindGoogle);
 
 router.get('/check-auth', userProfileController.CheckAuth);
 
+router.get('/check-provider-status', userProfileController.checkProviderStatus);
+
+
 
 router.post('/change-password/request-otp', [
     body("oldPassword").notEmpty().withMessage("Password lama wajib diisi."), validateRequest

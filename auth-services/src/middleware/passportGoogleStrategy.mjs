@@ -8,7 +8,7 @@ export default function passportGoogleStrategy() {
     passport.use(new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: `http://localhost:${process.env.PORT || 3001}/auth/google/callback`
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || `http://localhost:3000/auth/google/callback`
     }, async (accessToken, refreshToken, profile, done) => {
         try {
             const Querys = `SELECT u.* FROM users u JOIN user_identities ui 
