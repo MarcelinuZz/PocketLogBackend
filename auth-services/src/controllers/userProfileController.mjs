@@ -14,7 +14,7 @@ export const getMe = async (req, res) => {
         if (!userId) return res.status(401).json({ message: "Akses ditolak. Identitas tidak ditemukan dari Gateway." });
 
         const [rows] = await db.query(
-            'SELECT id, name, email, gender, DOB as dob, avatar_url FROM users WHERE id = ?',
+            'SELECT u.id, u.name, u.email, u.gender, u.DOB as dob, u.avatar_url, up.hashed_password as password FROM users u LEFT JOIN user_passwords up ON u.id = up.user_id WHERE u.id = ?',
             [userId]
         );
         if (rows.length === 0) return res.status(404).json({ message: "Data profil tidak ditemukan." });
@@ -181,5 +181,26 @@ export const CheckAuth = async (req, res) => {
     } catch (err) {
         console.error("[UserProfile Error - CheckAuth]:", err);
         res.status(500).json({ message: "Terjadi kesalahan saat mengecek authentikasi user." });
+    }
+};
+
+export const checkProviderStatus = async (req, res) => {
+    try {
+        const userId = req.headers['x-user-id'];
+        if (!userId) return res.status(401).json({ message: "Akses ditolak. Identitas tidak ditemukan dari Gateway." });
+
+        const [rows] = await db.query(
+            "SELECT provider_id FROM user_identities WHERE user_id = ? AND provider = 'google'",
+            [userId]
+        );
+
+        const isBound = rows.length > 0;
+        res.status(200).json({
+            message: isBound ? "Akun Google sudah terhubung." : "Akun Google belum terhubung.",
+            data: { google_bound: isBound }
+        });
+    } catch (err) {
+        console.error("[UserProfile Error - checkProviderStatus]:", err);
+        res.status(500).json({ message: "Terjadi kesalahan saat mengecek status provider." });
     }
 };
