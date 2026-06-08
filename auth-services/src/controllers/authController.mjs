@@ -147,7 +147,7 @@ export const googleCallback = (req, res) => {
     authCodes.set(authCode, { userId: req.user.id, expiresAt: Date.now() + 5 * 60 * 1000 });
     setTimeout(() => authCodes.delete(authCode), 5 * 60 * 1000);
 
-    const flutterAppUrl = process.env.FLUTTER_APP_URL || "http://localhost:5173";
+    const flutterAppUrl = process.env.FLUTTER_APP_URL;
     res.redirect(`${flutterAppUrl}/?goesto=/home&authCode=${authCode}`);
 };
 

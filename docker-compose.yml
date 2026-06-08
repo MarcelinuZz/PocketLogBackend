@@ -56,6 +56,8 @@ services:
       CATEGORY_SERVICE_URL: "http://category:3005"
       TRANSACTION_SERVICE_URL: "http://transaction:3006"
       REMINDER_SERVICE_URL: "http://reminder:3007"
+      NGROK_AUTHTOKEN: "3ErELyTtMN0X3U3EVE728tg0LD5_73ETRCHW5yJmJNhdW3ACX"
+      NGROK_DOMAIN: "skeletal-bacteria-hedging.ngrok-free.dev"
     depends_on:
       - auth
       - user
@@ -95,7 +97,8 @@ services:
       USER_SERVICE_URL: "http://user:3002"
       GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID:-your_google_client_id_here}"
       GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET:-your_google_client_secret_here}"
-      GOOGLE_CALLBACK_URL: "http://localhost:3000/auth/google/callback"
+      GOOGLE_CALLBACK_URL: "https://skeletal-bacteria-hedging.ngrok-free.dev/auth/google/callback"
+      FLUTTER_APP_URL: "pocketlog://auth-callback"
     volumes:
       - ./auth-services/public:/app/public
     depends_on:
