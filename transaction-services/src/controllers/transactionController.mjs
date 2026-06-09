@@ -152,12 +152,25 @@ export const getAllTransactions = async (req, res) => {
         const userId = req.headers['x-user-id'];
         if (!userId) return res.status(401).json({ message: "Akses ditolak. Identitas tidak ditemukan dari Gateway." });
 
-        const [rows] = await db.query(buildTransactionQuery(), [userId]);
-        const enriched = await enrichTransactions(rows);
+        const { type } = req.query;
+        const validTypes = ['income', 'expense', 'transfer'];
 
+        if (type && !validTypes.includes(type)) {
+            return res.status(400).json({ message: "Query parameter 'type' tidak valid. Gunakan: income, expense, atau transfer." });
+        }
+
+        const typeFilter = type ? 'AND type = ?' : '';
+        const params = type ? [userId, type] : [userId];
+
+        const [rows] = await db.query(buildTransactionQuery(typeFilter), params);
+        const enriched = await enrichTransactions(rows);
         const data = enriched.map(row => ({ ...row, day: formatDay(row.transaction_date) }));
 
-        res.status(200).json({ message: "Berhasil mengambil seluruh data transaksi", data });
+        const message = type
+            ? `Berhasil mengambil transaksi dengan type '${type}'`
+            : 'Berhasil mengambil seluruh data transaksi';
+
+        res.status(200).json({ message, data });
     } catch (err) {
         console.error("[Transaction Controller Error - GetAll]:", err);
         res.status(500).json({ message: "Terjadi kesalahan saat mengambil data transaksi." });
